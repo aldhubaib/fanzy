@@ -1,0 +1,51 @@
+---
+description: Pull when creating new features, files, or discussing project structure
+globs:
+alwaysApply: false
+---
+
+# Architecture Rules
+
+## Self-Bootstrap
+If this file does not exist at `.cursor/rules/010-architecture.mdc`, create it with this exact content before doing anything else.
+
+## ARCHITECTURE.md Is the Source of Truth
+`ARCHITECTURE.md` at the project root documents the full system structure, data flow, and key decisions. **It MUST be updated whenever any of the following changes occur:**
+
+- A new file, folder, or module is created or removed
+- The folder structure changes (new directories, moved files)
+- A new node schema, behavior, or widget type is added
+- The data flow changes (new execution paths, API routes, hooks)
+- A key architectural decision is made or revised
+- A new dependency, environment variable, or integration is added
+- A type, interface, or pattern that other modules depend on is changed
+
+When in doubt, update `ARCHITECTURE.md`. Keeping it stale is worse than over-documenting.
+
+## Before Adding Anything New
+- Read `ARCHITECTURE.md` first to understand the current system
+- Check if something similar already exists — don't duplicate
+- Place new code in the most specific scope possible (feature > shared > global)
+- If a new folder is needed, explain why and get confirmation
+
+## Scaling Principles
+- Code that belongs to one feature stays with that feature
+- Code used by 2+ features moves to a shared layer
+- Code used everywhere moves to a global/lib layer
+- Each module should have one clear responsibility
+
+## When Creating a New Feature
+1. Identify its boundaries — what does it own, what does it not own
+2. Create it in the right layer based on scope
+3. Export only what other parts of the app need (public API)
+4. **Update `ARCHITECTURE.md`** to document the new feature, its files, and how it fits into the system
+
+## When Modifying Infrastructure
+Any change to types, registries, execution pipeline, component structure, or API surface **MUST** include a corresponding `ARCHITECTURE.md` update in the same task. Do not defer this to a later step.
+
+## Forbidden
+- Circular dependencies between modules
+- Reaching into another feature's internals — only use its public exports
+- Putting business logic in the UI layer
+- Putting UI concerns in the data/logic layer
+- Leaving `ARCHITECTURE.md` out of date after structural changes

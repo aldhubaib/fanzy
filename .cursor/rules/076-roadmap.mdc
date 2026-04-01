@@ -1,0 +1,44 @@
+---
+description: Keep ROADMAP.md in sync with project progress
+alwaysApply: true
+---
+
+# Roadmap Maintenance
+
+`ROADMAP.md` at the project root tracks task lifecycle across six stages.
+
+## Sections (in order)
+1. **In Progress** — actively being worked on (1–2 items max)
+2. **Review** — code is done on a branch, waiting for user to test and approve merge
+3. **Known Bugs** — triaged bugs, ready to fix. Sits above feature work because bugs generally take priority
+4. **Up Next** — queued tasks, ready to start
+5. **Backlog** — ideas and lower-priority items
+6. **Done (recent)** — last 5–8 completed items, then archive or remove
+
+## Task Lifecycle
+- **Starting a task** → **immediately** move from "Up Next" to "In Progress", note the branch name. Do this as the very first action before writing any code. **Remove it from "Up Next"** — a task must never appear in two sections at once.
+- **Finishing a task** → **immediately** move from "In Progress" to "Review" in the same commit (or right after the final code commit). **Remove it from "In Progress"** — never leave a finished task behind.
+- **User approves merge** → merge the branch, move from "Review" to "Done (recent)", mark `[x]`. **Remove it from "Review"**.
+- **New bug reported** → add to "Known Bugs". When starting the fix, move to "In Progress" with a `fix/` branch
+- **New idea comes up** → add to "Up Next" or "Backlog"
+- **Task is abandoned** → move to "Backlog" with a note, **remove from its current section**
+
+## Critical Rule: No Duplicates
+A task must exist in **exactly one section** at all times. When moving a task between sections:
+1. Add it to the destination section
+2. Delete it from the source section
+3. Verify the task does not appear anywhere else in the file
+
+If you find a task listed in multiple sections, fix it immediately before doing anything else.
+
+## Format
+Each item uses a checkbox and a short description:
+- `- [ ] Task name — branch: \`feat/branch-name\``
+- `- [x] Task name`
+
+## Rules
+- A finished task always goes to "Review" first — never skip to "Done"
+- Only the user decides when to merge and move to "Done"
+- "In Progress" should have at most 1–2 items — focus is key
+- Never delete items without asking — move them to "Backlog" instead
+- After every roadmap update, re-read the file and confirm no task appears in more than one section

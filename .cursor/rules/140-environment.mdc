@@ -1,0 +1,46 @@
+---
+description: Environment variable conventions
+globs: .env* prisma.config.ts src/lib/**
+alwaysApply: false
+---
+
+# Environment Variable Conventions
+
+## File Layout
+- `.env.example` — committed template with all variable names (no values). Always keep in sync.
+- `.env.local` — local dev secrets (git-ignored, never committed). Primary method for local Cursor development.
+- **GitHub Codespaces Secrets** — for portable Codespace development. Set in repo settings → Codespaces → Secrets.
+- **Vercel dashboard** — production/preview deployment secrets.
+
+## Naming
+- `NEXT_PUBLIC_*` — exposed to the browser. Use only for non-secret values (Clerk publishable key, URLs)
+- Everything else — server-only. Never prefix with `NEXT_PUBLIC_` if it contains a secret
+- Use `SCREAMING_SNAKE_CASE` with logical grouping prefix (e.g. `CLERK_*`, `RUNPOD_*`, `DATABASE_*`)
+
+## Required Variables
+
+### Clerk
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` — frontend auth
+- `CLERK_SECRET_KEY` — backend auth + API calls
+- `CLERK_WEBHOOK_SECRET` — webhook signature verification
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL` — `/sign-in`
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL` — `/sign-up`
+
+### Database
+- `DATABASE_URL` — Neon PostgreSQL connection string
+
+### RunPod
+- `RUNPOD_API_KEY` — API authentication
+- Endpoint IDs added per-model as needed
+
+### Inngest
+- `INNGEST_SIGNING_KEY` — production signing key for webhook verification
+
+### LLM (Script Parsing)
+- `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` — for script analysis and scene extraction
+
+## Rules
+- When adding a new env var, always update `.env.example` with a comment explaining its purpose
+- Access env vars via `process.env.VAR_NAME` — never create wrapper config objects unless there are 5+ vars for a service
+- Never use `!` non-null assertion on env vars in production code without a startup check
+- If a var is optional, handle the `undefined` case explicitly

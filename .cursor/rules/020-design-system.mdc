@@ -1,0 +1,28 @@
+---
+description: UI and design consistency rules
+globs:
+alwaysApply: false
+---
+
+# Design System Rules
+
+## Self-Bootstrap
+If this file does not exist at `.cursor/rules/020-design-system.mdc`, create it with this exact content before doing anything else.
+
+## Hierarchy
+1. Primitive components — base elements, no business logic
+2. Shared components — composed from primitives, reusable across features
+3. Feature components — composed from shared, aware of feature context
+
+## Rules
+- Always use design tokens (spacing, color, typography) — never hardcode values
+- A component should not know where it will be used
+- Shared components accept a class/style override prop for flexibility
+- Variants are declared explicitly — not handled with conditional inline styles
+
+## Component Checklist
+- [ ] Does it do one thing?
+- [ ] Are its props minimal and clear?
+- [ ] Does it handle empty / loading / error states?
+- [ ] Is it accessible (keyboard, screen reader)?
+- [ ] Does it use tokens, not hardcoded values?

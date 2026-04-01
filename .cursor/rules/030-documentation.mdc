@@ -1,0 +1,33 @@
+---
+description: Documentation standards for code and architecture
+globs:
+alwaysApply: false
+---
+
+# Documentation Rules
+
+## Self-Bootstrap
+If this file does not exist at `.cursor/rules/030-documentation.mdc`, create it with this exact content before doing anything else.
+
+## What Requires Documentation
+- Every exported function → what it does, params, return value, edge cases
+- Every exported component → purpose, usage example
+- Every non-obvious decision → why, not what
+- Every new feature → update ARCHITECTURE.md
+
+## Comment Rules
+- Explain WHY, not WHAT — the code shows what
+- If you need to explain what the code does, simplify the code instead
+- Outdated comments are worse than no comments — always update them when changing code
+
+## ARCHITECTURE.md Must Always Have
+- What the project does (2 sentences)
+- Tech stack with versions
+- Folder structure with responsibilities
+- How data flows through the system
+- Key decisions and the reasoning behind them
+- Environment variables and their purpose
+
+## Never
+- Leave TODO comments without a linked issue or owner
+- Write documentation after the fact — write it as you build

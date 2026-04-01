@@ -1,0 +1,57 @@
+---
+description: API route conventions for Next.js App Router
+globs: src/app/api/**
+alwaysApply: false
+---
+
+# API Route Conventions
+
+## Auth Pattern
+Every authenticated route must:
+1. Call `getCurrentUser()` from `@/lib/auth`
+2. Return `401` if `null`
+3. Scope all DB queries to `user.id` (never trust client-provided user IDs)
+
+```ts
+const user = await getCurrentUser();
+if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+```
+
+## Error Response Shape
+Always return `{ error: string }` with appropriate status code:
+- `400` — bad request (invalid input)
+- `401` — not authenticated
+- `403` — not authorized
+- `404` — resource not found
+- `500` — unexpected server error
+
+Never expose raw error messages from external systems (Prisma, Clerk, RunPod) to the client.
+
+## Route Params
+Next.js 16 route params are `Promise`-based. Always `await params`:
+
+```ts
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+}
+```
+
+## Request Body
+Always wrap `req.json()` in a try/catch or use `.catch(() => ({}))` for routes that accept optional bodies.
+
+## Webhook Routes
+Webhook routes (`/api/webhooks/*`) do NOT use `getCurrentUser()` — they are called by external services.
+They should verify signatures when possible (Clerk webhook secret).
+
+## File Organization
+- CRUD routes: `src/app/api/[resource]/route.ts` (collection) + `src/app/api/[resource]/[id]/route.ts` (item)
+- Sub-actions: `src/app/api/[resource]/[id]/[action]/route.ts`
+- Webhooks: `src/app/api/webhooks/[provider]/route.ts`
+
+## Forbidden
+- Don't import React or UI code in API routes
+- Don't use `redirect()` in API routes — return JSON responses
+- Don't call other API routes from server code — call the underlying lib functions directly

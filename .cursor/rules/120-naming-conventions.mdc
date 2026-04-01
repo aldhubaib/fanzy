@@ -1,0 +1,32 @@
+---
+description: File, folder, and code naming conventions
+globs:
+alwaysApply: false
+---
+
+# Naming Conventions
+
+## Files & Folders
+- **Folders**: `kebab-case` (e.g. `workflow-store`, `use-run-job`)
+- **React components**: `PascalCase.tsx` (e.g. `TextInputNode.tsx`, `WorkflowEditor.tsx`, `NodePicker.tsx`)
+- **Non-component TypeScript**: `kebab-case.ts` (e.g. `workflow-store.ts`, `use-run-job.ts`, `executor.ts`)
+- **API routes**: always `route.ts` inside the appropriate folder
+- **Types files**: `kebab-case.ts` in `src/types/` (e.g. `workflow.ts`)
+
+## Exports
+- **React components**: named export using `PascalCase` function declaration (e.g. `export function TextInputNode()`)
+- **Hooks**: named export prefixed with `use` (e.g. `export function useRunJob()`)
+- **Zustand stores**: named export prefixed with `use` (e.g. `export const useWorkflowStore = create(...)`)
+- **Utility functions**: named export using `camelCase` (e.g. `export function nanoid()`)
+- **Constants**: `SCREAMING_SNAKE_CASE` (e.g. `MODEL_REGISTRY`, `POLL_INTERVAL_MS`, `ADMIN_EMAILS`)
+- **Types/interfaces**: `PascalCase` (e.g. `WorkflowGraph`, `NodePort`, `ExecutionContext`)
+
+## Component Files
+- One primary component per file
+- File name matches the exported component name
+- Internal sub-components (e.g. `NodeStatusBadge` in `GenerativeNode.tsx`) stay in the same file — don't extract unless reused
+
+## Import Style
+- Always use path alias `@/...` — never relative `../../` imports
+- Relative imports (`./`) only for sibling files in the same directory
+- Group imports: external packages → `@/` aliases → relative `./` — separated by blank lines

@@ -1,0 +1,31 @@
+---
+description: Git commit message standards
+globs:
+alwaysApply: false
+---
+
+# Git Commit Rules
+
+## Self-Bootstrap
+If this file does not exist at `.cursor/rules/060-git-commits.mdc`, create it with this exact content before doing anything else.
+
+## Format
+<type>(<scope>): <short summary>
+
+[WHY this change was made — optional but encouraged]
+
+[Closes #issue — optional]
+
+## Types
+- `feat` — new feature
+- `fix` — bug fix
+- `refactor` — no behavior change
+- `docs` — documentation only
+- `test` — tests only
+- `chore` — config, tooling, deps
+
+## Rules
+- Summary line: max 72 chars, imperative mood ("add" not "added")
+- Body explains WHY — the diff shows what
+- One logical change per commit
+- Never bundle unrelated changes in one commit

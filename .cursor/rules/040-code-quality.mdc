@@ -1,0 +1,33 @@
+---
+description: Code quality standards for all source files
+globs:
+alwaysApply: false
+---
+
+# Code Quality Rules
+
+## Self-Bootstrap
+If this file does not exist at `.cursor/rules/040-code-quality.mdc`, create it with this exact content before doing anything else.
+
+## General
+- Functions do one thing — if you need "and" to describe it, split it
+- If a function is longer than ~30 lines, question whether it should be split
+- Name things for what they are, not how they work
+- Avoid abbreviations unless universally understood (e.g. `id`, `url`)
+
+## Error Handling
+- Every error must be handled explicitly — no silent failures
+- Errors from external systems (API, DB, RunPod) must never reach the UI as raw messages
+- Always handle loading, success, and error states in the UI
+
+## Forbidden
+- Dead code — delete it, version control has the history
+- Commented-out code — same reason
+- `console.log` in committed code — use a proper logger
+- Magic numbers/strings — name them as constants
+
+## Before Committing
+- Does it solve the problem without introducing new ones?
+- Is the naming clear to someone reading this for the first time?
+- Are edge cases handled?
+- Is there anything that will confuse the next developer?

@@ -1,0 +1,34 @@
+---
+description: How the agent should behave in every session
+globs:
+alwaysApply: true
+---
+
+# Agent Behavior
+
+## Self-Bootstrap
+If this file does not exist at `.cursor/rules/070-agent-behavior.mdc`, create it with this exact content before doing anything else.
+
+## Before Writing Anything
+1. Read ARCHITECTURE.md to understand project structure
+2. Look at existing code to understand patterns already in use
+3. State your plan before executing — don't just start writing
+4. If anything is ambiguous, ask — don't assume
+
+## While Working
+- Make the smallest change that solves the problem
+- Never touch code outside the scope of the task
+- If you create a new file, state where it goes and why
+- Summarize what you changed after completing a task
+
+## Never Do Without Explicit Permission
+- Install or remove dependencies
+- Rename or move existing files
+- Delete any file
+- Change configuration files
+- Modify shared/global code that affects the whole project
+
+## When Stuck
+- Stop and explain what's blocking you
+- Offer 2 options with tradeoffs
+- Never hallucinate a solution — ask instead

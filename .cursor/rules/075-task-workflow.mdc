@@ -1,0 +1,39 @@
+---
+description: Branch-per-feature workflow for every task
+alwaysApply: true
+---
+
+# Task Workflow
+
+Every task — feature, fix, refactor — follows this workflow. No exceptions.
+
+## Before Starting
+1. Create a branch from `main`: `git checkout -b <type>/<short-name>`
+   - `feat/` — new feature
+   - `fix/` — bug fix
+   - `refactor/` — structural change, no new behavior
+   - `chore/` — config, deps, tooling
+2. State the goal in one sentence
+3. List the files/layers that will be affected
+4. Get user confirmation before writing code
+
+## While Working
+- One logical change per commit — don't bundle unrelated work
+- If touching multiple layers (schema → service → component → API), commit after completing each layer
+- Never modify files outside the agreed scope without asking
+- Run the dev server and check for errors after significant changes
+
+## After Completing
+1. Verify the app runs without errors
+2. Update `ARCHITECTURE.md` if any files, folders, or patterns changed
+3. Update `ROADMAP.md` — move the task from "In Progress" to **"Review"** (never straight to Done)
+4. Update or create the feature card in `docs/features/` if a feature was added or changed
+5. Summarize: what changed, which files, and any follow-up needed
+6. Do NOT merge to `main` without explicit user permission
+7. Only move to "Done" after the user approves and says to merge
+
+## Branch Naming Examples
+- `feat/script-parser` — adding the script parsing feature
+- `fix/character-sync` — fixing a bug in character data sync
+- `refactor/timeline-store` — restructuring timeline state management
+- `chore/update-prisma` — updating a dependency

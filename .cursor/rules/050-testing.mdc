@@ -1,0 +1,34 @@
+---
+description: Testing standards and patterns
+globs:
+alwaysApply: false
+---
+
+# Testing Rules
+
+## Current Status
+No test runner is configured yet. There is no `test` script in `package.json`, no Vitest/Jest dependency, and no test files.
+When testing is set up (planned: Vitest), follow the conventions below.
+
+## What to Test
+- Pure logic and utilities (e.g. `executor.ts`, `utils.ts`) → always unit test
+- Critical user flows → always integration/e2e test
+- API routes → integration test with mocked DB/RunPod
+- UI styling and layout → skip
+- Static content → skip
+
+## How to Write Tests
+- One concept per test
+- Structure: Arrange → Act → Assert
+- Test descriptions: "should [behavior] when [condition]"
+- Test behavior, not implementation — if internals change but behavior doesn't, tests should still pass
+- Place test files next to the code they test: `foo.ts` → `foo.test.ts`
+
+## Rules
+- Mock at the boundary — external systems only (APIs, DB, RunPod, Clerk, Inngest)
+- Never mock the code you're testing
+- A failing test must tell you exactly what broke and where
+
+## Before Adding Tests
+- Ask the user before installing a test runner
+- Do not add test scripts or dependencies without explicit permission

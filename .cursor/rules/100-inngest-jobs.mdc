@@ -1,0 +1,34 @@
+---
+description: Inngest background job and execution conventions
+globs: src/lib/inngest/** src/app/api/inngest/**
+alwaysApply: false
+---
+
+# Inngest & Background Job Conventions
+
+## Architecture
+- Inngest client is a singleton in `src/lib/inngest/client.ts` (id: `"fanzy"`)
+- All Inngest functions live in `src/lib/inngest/functions/`
+- Functions are registered and served via `src/app/api/inngest/route.ts`
+- The serve route exposes `GET`, `POST`, `PUT` methods — do not add middleware that blocks these
+
+## Event Naming
+- Format: `domain/resource.action` (e.g. `project/generation.requested`, `scene/video.completed`)
+- Define event types using `eventType()` with `staticSchema<T>()` for type safety
+- Event data should contain IDs (not full objects) plus the minimum data needed for execution
+
+## Function Pattern
+- One function per job type
+- Use `step.run("step-name", async () => { ... })` for each atomic operation
+- Use `step.sleep("wait-name", duration)` for polling intervals
+- Step names must be unique within a function — use descriptive suffixes
+
+## Retries & Timeouts
+- Default retries: 2 (configured in function options)
+- Polling intervals: 5s for short jobs, configurable for long-running video generation
+- If polling exhausts attempts, mark the job as `FAILED`
+
+## Forbidden
+- Don't import Inngest client outside of `src/lib/inngest/` and the serve route
+- Don't call Inngest functions directly — always send events via `inngest.send()`
+- Don't put UI or React code in Inngest function files
