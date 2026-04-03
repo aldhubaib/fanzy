@@ -3,7 +3,7 @@
 ## In Progress
 
 ## Review
-- [ ] Researcher agent — Fact Sheet + Name Registry generation from raw story input — branch: `feat/researcher-agent`
+- [ ] Auth integration — Google sign-in via Clerk, protected API routes — branch: `feat/auth-google`
 
 ## Known Bugs
 
@@ -19,7 +19,7 @@
 - [ ] PDF export — production-ready storyboard document via Puppeteer
 - [ ] Persona system — agent identity, example portfolio, genre specialization
 - [ ] Arabic Unicode normalization — consistent handling across all text processing
-- [ ] Auth integration — Clerk user management, project ownership scoping
 
 ## Done (recent)
+- [x] Researcher agent — Fact Sheet + Name Registry generation from raw story input
 - [x] Project scaffold — Express + React + Prisma + TypeScript monorepo setup
