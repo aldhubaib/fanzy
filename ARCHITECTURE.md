@@ -73,39 +73,71 @@ fanzy/
 - **User** — synced from Clerk via webhook, owns projects
 - **Project** — title, source text, genre, dialect, status (tracks pipeline stage)
 - **FactSheet** — immutable facts, name registry, timeline, locations (locked after Researcher)
-- **Script** — structured acts/beats with fact references, narration, timing
-- **Storyboard** — scenes with shot types, camera direction, B-roll, transitions
-- **PipelineRun** — tracks each agent's input, output, status, errors
+- **VisualBrief** — Director's vision: visual style, shot preferences, location notes, pacing
+- **Script** — structured acts/beats with fact references, narration, timing, visual hooks
+- **Storyboard** — scenes with shot types, camera direction, B-roll, graphics, transitions
+- **QAReport** — reviewer ID (lawyer/viewer), status, issues with target agent + location
+- **PipelineRun** — tracks each agent's input, output, status, errors, revision round
 
 ## Agent Pipeline
+
+**Max quality architecture — 11 agents, parallel pairs, dual QA, revision loop.**
 
 ```
 Raw Story Input
     ↓
-┌──────────┐
-│ Researcher│ → Produces LOCKED Fact Sheet + Name Registry
-└────┬─────┘
-     ↓  (Fact Sheet passed read-only to all below)
-┌──────────────┐
-│ Scriptwriter  │ → Structured script with fact references
-└──────┬───────┘
+┌────────────┐
+│ Researcher  │ → LOCKED Fact Sheet + Name Registry 🔒
+└──────┬─────┘
        ↓
-┌──────────┐
-│ Editor    │ → Polished script (can't change facts)
-└────┬─────┘
-     ↓
-┌──────────┐
-│ Director  │ → Visual storyboard (shot types, B-roll, camera)
-└────┬─────┘
-     ↓
-┌──────────┐
-│ QA        │ → Cross-references ALL output against Fact Sheet
-└────┬─────┘
-     ↓
-Production-Ready Storyboard
+┌────────────┐
+│ Director    │ → Visual Direction Brief
+│ (brief)     │
+└──────┬─────┘
+       ↓ (Fact Sheet + Brief shared read-only to all below)
+┌────────────────┐  ┌─────────────────┐
+│ Scriptwriter A  │  │ Scriptwriter B   │  ← parallel, different personas
+│ (Narrator)      │  │ (Storyteller)    │
+└───────┬────────┘  └────────┬────────┘
+        └──────┬─────────────┘
+               ↓
+        ┌────────────┐
+        │ Editor      │ → Selects best elements, merges, polishes
+        │ (merge)     │
+        └──────┬─────┘
+               ↓
+┌────────────────┐  ┌─────────────────┐
+│ Director A      │  │ Director B       │  ← parallel, different perspectives
+│ (Cinematic Eye) │  │ (News Eye)       │
+└───────┬────────┘  └────────┬────────┘
+        └──────┬─────────────┘
+               ↓
+        ┌────────────────┐
+        │ Continuity      │ → Merges storyboards, validates spatial/temporal logic
+        │ Checker         │
+        └──────┬─────────┘
+               ↓
+┌────────────────┐  ┌─────────────────┐
+│ QA: The Lawyer  │  │ QA: The Viewer   │  ← parallel, different criteria
+│ (accuracy)      │  │ (audience)       │
+└───────┬────────┘  └────────┬────────┘
+        └──────┬─────────────┘
+               ↓
+        Issues found? ──→ Yes: route corrections to specific agents
+               │                    ↓
+               No            Agents revise → QA re-checks (max 3 rounds)
+               ↓
+        ┌────────────┐
+        │ Editor      │ → Final polish — unify tone, smooth revision seams
+        │ (final)     │
+        └──────┬─────┘
+               ↓
+    Production-Ready Storyboard
 ```
 
-Each agent step is a BullMQ job. Pipeline state is persisted in PipelineRun records.
+11 agents, 6 run in parallel pairs. Wall-clock time: ~65-85 seconds. Cost: ~$2 per script.
+
+Each agent step is a BullMQ job. Pipeline state is persisted in PipelineRun records. Full research and rationale in `docs/research/multi-agent-pipeline-architecture.md`.
 
 ## Agent Implementation Pattern
 
@@ -127,14 +159,17 @@ Each agent follows a three-layer architecture:
 
 ## Key Decisions
 
-1. **Fact Sheet is immutable** — once the Researcher signs off, no code path may modify it
-2. **Name Registry uses programmatic validation** — string matching, not LLM inference
-3. **Every agent has Zod input/output contracts** — structured JSON, not free text
-4. **Express 5 (not Next.js)** — server-rendered pages aren't needed; clean API + SPA separation
-5. **Railway for everything** — PostgreSQL, Redis, and app container in one place
-6. **IBM Plex Sans Arabic** — primary font, designed for Arabic readability
-7. **RTL-first frontend** — HTML lang="ar" dir="rtl" from the start
-8. **Google-only auth via Clerk** — `@clerk/react` on frontend, `@clerk/express` middleware on backend
+1. **Quality over cost** — the quality gap between Fanzy and a single ChatGPT prompt is the product. No compromises on agent capability.
+2. **Fact Sheet is immutable** — once the Researcher signs off, no code path may modify it
+3. **Name Registry uses programmatic validation** — string matching, not LLM inference
+4. **Every agent has Zod input/output contracts** — structured JSON, not free text
+5. **Dual agents at creative stages** — two scriptwriters, two directors, best-of-2 selection
+6. **Dual QA reviewers (MARS pattern)** — The Lawyer (accuracy) + The Viewer (audience). Academically validated: independent reviewers catch more than one reviewer or open debate.
+7. **All agents use Claude Sonnet 4** — no model downgrade for cost savings
+8. **Custom orchestration on BullMQ** — no framework overhead (LangGraph, CrewAI rejected). Full auditability.
+9. **Express 5 (not Next.js)** — server-rendered pages aren't needed; clean API + SPA separation
+10. **Railway for everything** — PostgreSQL, Redis, and app container in one place
+11. **Google-only auth via Clerk** — `@clerk/react` on frontend, `@clerk/express` middleware on backend
 
 ## Authentication
 

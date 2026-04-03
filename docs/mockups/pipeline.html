@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fanzy — Pipeline Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --card: #161616;
+    --card-hover: #1a1a1a;
+    --card-active: #1e1e1e;
+    --border: #222;
+    --border-active: #444;
+    --text: #fafafa;
+    --text-dim: #666;
+    --text-mid: #999;
+    --green: #34d399;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --blue: #60a5fa;
+    --pulse: #fafafa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  .app {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 16px 80px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-back {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .header-back:hover { color: var(--text-mid); }
+  .header-title {
+    font-size: 14px;
+    font-weight: 600;
+    flex: 1;
+  }
+  .header-status {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 99px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .header-status.running {
+    background: rgba(250, 250, 250, 0.08);
+    color: var(--text);
+  }
+  .header-status.complete {
+    background: rgba(52, 211, 153, 0.1);
+    color: var(--green);
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text);
+  }
+  .status-dot.pulse {
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .status-dot.green { background: var(--green); }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* Pipeline */
+  .pipeline { position: relative; }
+
+  /* Connector lines */
+  .connector {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+    margin: 0 auto;
+  }
+  .connector.active { background: var(--text-dim); }
+
+  /* Phase group */
+  .phase { margin-bottom: 0; }
+  .phase-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+
+  /* Agent card */
+  .agent-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+  }
+  .agent-card:hover {
+    background: var(--card-hover);
+    border-color: var(--border-active);
+  }
+  .agent-card.expanded {
+    background: var(--card-active);
+    border-color: var(--border-active);
+  }
+  .agent-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .agent-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.04);
+  }
+  .agent-info { flex: 1; }
+  .agent-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .agent-meta {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 1px;
+  }
+  .agent-chevron {
+    color: var(--text-dim);
+    font-size: 14px;
+    transition: transform 0.2s;
+  }
+  .agent-card.expanded .agent-chevron {
+    transform: rotate(90deg);
+  }
+
+  /* Status indicators */
+  .agent-status {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+  .agent-status.done {
+    background: rgba(52, 211, 153, 0.1);
+    color: var(--green);
+  }
+  .agent-status.running {
+    background: rgba(250, 250, 250, 0.08);
+    color: var(--text);
+    animation: statusPulse 2s ease-in-out infinite;
+  }
+  .agent-status.pending {
+    background: rgba(255,255,255,0.03);
+    color: var(--text-dim);
+  }
+  .agent-status.revision {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--amber);
+  }
+  @keyframes statusPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* Parallel row */
+  .parallel-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .parallel-row .agent-card {
+    padding: 12px 14px;
+  }
+
+  /* Merge indicator */
+  .merge-lines {
+    display: flex;
+    justify-content: center;
+    height: 24px;
+    position: relative;
+  }
+  .merge-lines::before,
+  .merge-lines::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: calc(25% - 4px);
+    height: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .merge-lines::before {
+    left: 25%;
+    border-right: 1px solid var(--border);
+    border-bottom-right-radius: 8px;
+  }
+  .merge-lines::after {
+    right: 25%;
+    border-left: 1px solid var(--border);
+    border-bottom-left-radius: 8px;
+  }
+  .merge-center {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 12px;
+    background: var(--border);
+  }
+
+  /* Split indicator */
+  .split-lines {
+    display: flex;
+    justify-content: center;
+    height: 24px;
+    position: relative;
+  }
+  .split-lines::before,
+  .split-lines::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: calc(25% - 4px);
+    height: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .split-lines::before {
+    left: 25%;
+    border-right: 1px solid var(--border);
+    border-top-right-radius: 8px;
+  }
+  .split-lines::after {
+    right: 25%;
+    border-left: 1px solid var(--border);
+    border-top-left-radius: 8px;
+  }
+  .split-center {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 12px;
+    background: var(--border);
+  }
+
+  /* Expanded content */
+  .agent-content {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .agent-card.expanded .agent-content {
+    display: block;
+  }
+  .output-section {
+    margin-bottom: 10px;
+  }
+  .output-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .output-text {
+    font-size: 12px;
+    color: var(--text-mid);
+    line-height: 1.6;
+  }
+  .output-tag {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.04);
+    color: var(--text-mid);
+    margin-right: 4px;
+    margin-bottom: 4px;
+  }
+  .arabic-zone {
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+    direction: rtl;
+    text-align: right;
+    background: rgba(255,255,255,0.02);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.8;
+  }
+
+  /* QA Issues */
+  .qa-issue {
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.02);
+    margin-bottom: 6px;
+    border-left: 2px solid var(--amber);
+  }
+  .qa-issue.resolved {
+    border-left-color: var(--green);
+  }
+  .qa-issue-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+  .qa-issue-type {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .qa-issue-type.critical { color: var(--amber); }
+  .qa-issue-type.resolved { color: var(--green); }
+  .qa-issue-target {
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .qa-issue-desc {
+    font-size: 11px;
+    color: var(--text-mid);
+  }
+
+  /* Status counters */
+  .counters {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 32px;
+  }
+  .counter-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .counter-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 4px;
+  }
+  .counter-value {
+    font-size: 20px;
+    font-weight: 600;
+  }
+  .counter-value.green { color: var(--green); }
+  .counter-value.amber { color: var(--amber); }
+  .counter-value.red { color: var(--red); }
+  .counter-value.dim { color: var(--text-mid); }
+
+  /* Activity feed */
+  .activity {
+    margin-top: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .activity-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .activity-title {
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .activity-count {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .activity-list {
+    max-height: 260px;
+    overflow-y: auto;
+  }
+  .activity-item {
+    padding: 8px 16px;
+    display: flex;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: background 0.1s;
+  }
+  .activity-item:hover { background: rgba(255,255,255,0.02); }
+  .activity-item:last-child { border-bottom: none; }
+  .activity-time {
+    font-size: 10px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    min-width: 52px;
+  }
+  .activity-agent {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-mid);
+    min-width: 80px;
+  }
+  .activity-msg {
+    font-size: 11px;
+    color: var(--text-dim);
+    flex: 1;
+  }
+  .activity-icon {
+    font-size: 10px;
+    width: 14px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.6;
+  }
+
+  /* Storyboard grid */
+  .storyboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .scene-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .scene-number {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .scene-shot {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .scene-desc {
+    font-size: 11px;
+    color: var(--text-mid);
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+  .scene-meta {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  /* Revision badge */
+  .revision-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--amber);
+    margin-top: 8px;
+  }
+  .revision-badge.resolved {
+    background: rgba(52, 211, 153, 0.1);
+    color: var(--green);
+  }
+
+  /* Progress bar inside agent cards */
+  .progress-bar {
+    height: 2px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 1px;
+    margin-top: 8px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--text);
+    border-radius: 1px;
+    transition: width 0.3s;
+  }
+
+  /* Timing */
+  .timing {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Animation for new activity items */
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .activity-item.new {
+    animation: slideIn 0.3s ease;
+  }
+
+  .section-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <a class="header-back">&larr; Projects</a>
+    <div class="header-title">Saudi Coffee Traditions</div>
+    <div class="header-status running" id="headerStatus">
+      <div class="status-dot pulse"></div>
+      Running &middot; 42s
+    </div>
+  </div>
+
+  <!-- Pipeline -->
+  <div class="pipeline">
+
+    <!-- Phase 1: Research -->
+    <div class="phase">
+      <div class="agent-card expanded" onclick="toggleCard(this)">
+        <div class="agent-card-header">
+          <div class="agent-icon">&#128269;</div>
+          <div class="agent-info">
+            <div class="agent-name">Researcher</div>
+            <div class="agent-meta">Fact Sheet &middot; 8.2s</div>
+          </div>
+          <span class="agent-status done">Done</span>
+          <span class="agent-chevron">&rsaquo;</span>
+        </div>
+        <div class="agent-content">
+          <div class="output-section">
+            <div class="output-label">Fact Sheet</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
+              <span class="output-tag">14 facts</span>
+              <span class="output-tag">3 characters</span>
+              <span class="output-tag">5 locations</span>
+              <span class="output-tag">3-week timeline</span>
+            </div>
+          </div>
+          <div class="output-section">
+            <div class="output-label">Name Registry</div>
+            <div class="arabic-zone">
+              محمد الغامدي &bull; عائشة &bull; خالد
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector active"></div>
+
+    <!-- Phase 2: Brief -->
+    <div class="phase">
+      <div class="agent-card" onclick="toggleCard(this)">
+        <div class="agent-card-header">
+          <div class="agent-icon">&#127916;</div>
+          <div class="agent-info">
+            <div class="agent-name">Director Brief</div>
+            <div class="agent-meta">Visual Direction &middot; 5.8s</div>
+          </div>
+          <span class="agent-status done">Done</span>
+          <span class="agent-chevron">&rsaquo;</span>
+        </div>
+        <div class="agent-content">
+          <div class="output-section">
+            <div class="output-label">Visual Style</div>
+            <div class="output-text">Cinematic documentary — warm tones, natural light, intimate framing. Slow pacing to match the ritual of coffee preparation.</div>
+          </div>
+          <div class="output-section">
+            <div class="output-label">Shot Preferences</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <span class="output-tag">Establishing wides</span>
+              <span class="output-tag">Extreme close-ups</span>
+              <span class="output-tag">Over-shoulder</span>
+              <span class="output-tag">Slow pans</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector active"></div>
+
+    <!-- Phase 3: Dual Script — split -->
+    <div class="phase">
+      <div class="phase-label">Script &middot; Best of 2</div>
+      <div class="split-lines"><div class="split-center"></div></div>
+      <div class="parallel-row">
+        <div class="agent-card" onclick="toggleCard(this)">
+          <div class="agent-card-header">
+            <div class="agent-icon">&#9997;</div>
+            <div class="agent-info">
+              <div class="agent-name">Narrator</div>
+              <div class="agent-meta">12.1s</div>
+            </div>
+            <span class="agent-status done">Done</span>
+          </div>
+          <div class="agent-content">
+            <div class="output-section">
+              <div class="output-label">Script Draft A</div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">
+                <span class="output-tag">3 acts</span>
+                <span class="output-tag">12 beats</span>
+                <span class="output-tag">9:40</span>
+              </div>
+              <div class="arabic-zone">
+                في أعالي جبال الطائف، حيث يلتقي الضباب بأشجار الورد، تبدأ قصة القهوة العربية...
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="agent-card" onclick="toggleCard(this)">
+          <div class="agent-card-header">
+            <div class="agent-icon">&#10024;</div>
+            <div class="agent-info">
+              <div class="agent-name">Storyteller</div>
+              <div class="agent-meta">11.4s</div>
+            </div>
+            <span class="agent-status done">Done</span>
+          </div>
+          <div class="agent-content">
+            <div class="output-section">
+              <div class="output-label">Script Draft B</div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">
+                <span class="output-tag">3 acts</span>
+                <span class="output-tag">14 beats</span>
+                <span class="output-tag">10:05</span>
+              </div>
+              <div class="arabic-zone">
+                محمد الغامدي لا يتذكر أول فنجان قهوة شربه. يقول إن القهوة كانت دائمًا هناك...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="merge-lines"><div class="merge-center"></div></div>
+
+      <!-- Editor merge -->
+      <div class="agent-card" onclick="toggleCard(this)">
+        <div class="agent-card-header">
+          <div class="agent-icon">&#9998;</div>
+          <div class="agent-info">
+            <div class="agent-name">Editor</div>
+            <div class="agent-meta">Merge + Polish &middot; 10.3s</div>
+          </div>
+          <span class="agent-status done">Done</span>
+          <span class="agent-chevron">&rsaquo;</span>
+        </div>
+        <div class="agent-content">
+          <div class="output-section">
+            <div class="output-label">Selection</div>
+            <div class="output-text">Storyteller's emotional opening + Narrator's structured acts. Merged to 13 beats, 9:52 duration.</div>
+          </div>
+          <div class="output-section">
+            <div class="output-label">Merged Script</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap">
+              <span class="output-tag">3 acts</span>
+              <span class="output-tag">13 beats</span>
+              <span class="output-tag">9:52</span>
+              <span class="output-tag">18 fact refs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector active"></div>
+
+    <!-- Phase 4: Dual Direction — split -->
+    <div class="phase">
+      <div class="phase-label">Direction &middot; Best of 2</div>
+      <div class="split-lines"><div class="split-center"></div></div>
+      <div class="parallel-row">
+        <div class="agent-card" onclick="toggleCard(this)" style="border-color: rgba(245,158,11,0.2);">
+          <div class="agent-card-header">
+            <div class="agent-icon">&#127909;</div>
+            <div class="agent-info">
+              <div class="agent-name">Cinematic Eye</div>
+              <div class="agent-meta">15.2s</div>
+            </div>
+            <span class="agent-status done">Done</span>
+          </div>
+          <div class="agent-content">
+            <div class="output-section">
+              <div class="output-label">Storyboard A</div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <span class="output-tag">18 scenes</span>
+                <span class="output-tag">Drone opens</span>
+                <span class="output-tag">Handheld craft</span>
+              </div>
+            </div>
+            <div class="revision-badge resolved">&#10003; Revised in Round 1 — added establishing shot</div>
+          </div>
+        </div>
+        <div class="agent-card" onclick="toggleCard(this)">
+          <div class="agent-card-header">
+            <div class="agent-icon">&#128240;</div>
+            <div class="agent-info">
+              <div class="agent-name">News Eye</div>
+              <div class="agent-meta">13.8s</div>
+            </div>
+            <span class="agent-status done">Done</span>
+          </div>
+          <div class="agent-content">
+            <div class="output-section">
+              <div class="output-label">Storyboard B</div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <span class="output-tag">16 scenes</span>
+                <span class="output-tag">Tripod coverage</span>
+                <span class="output-tag">Interview setups</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="merge-lines"><div class="merge-center"></div></div>
+
+      <!-- Continuity Checker -->
+      <div class="agent-card" onclick="toggleCard(this)">
+        <div class="agent-card-header">
+          <div class="agent-icon">&#128279;</div>
+          <div class="agent-info">
+            <div class="agent-name">Continuity Checker</div>
+            <div class="agent-meta">Merge + Validate &middot; 9.6s</div>
+          </div>
+          <span class="agent-status done">Done</span>
+          <span class="agent-chevron">&rsaquo;</span>
+        </div>
+        <div class="agent-content">
+          <div class="output-section">
+            <div class="output-label">Final Storyboard</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
+              <span class="output-tag">20 scenes</span>
+              <span class="output-tag">All locations established</span>
+              <span class="output-tag">No continuity gaps</span>
+            </div>
+          </div>
+          <div class="storyboard-grid">
+            <div class="scene-card">
+              <div class="scene-number">Scene 1</div>
+              <div class="scene-shot">Establishing Wide</div>
+              <div class="scene-desc">Taif hills at sunrise, mist over coffee terraces</div>
+              <div class="scene-meta">
+                <span class="output-tag">Drone</span>
+                <span class="output-tag">B-roll: mist</span>
+              </div>
+            </div>
+            <div class="scene-card">
+              <div class="scene-number">Scene 2</div>
+              <div class="scene-shot">Medium Shot</div>
+              <div class="scene-desc" style="font-family:'IBM Plex Sans Arabic';direction:rtl;text-align:right">محمد يجهّز القهوة العربية</div>
+              <div class="scene-meta">
+                <span class="output-tag">Static</span>
+                <span class="output-tag">Natural light</span>
+              </div>
+            </div>
+            <div class="scene-card">
+              <div class="scene-number">Scene 3</div>
+              <div class="scene-shot">Extreme Close-up</div>
+              <div class="scene-desc">Coffee beans roasting in traditional pan</div>
+              <div class="scene-meta">
+                <span class="output-tag">Macro</span>
+                <span class="output-tag">Slow motion</span>
+              </div>
+            </div>
+            <div class="scene-card">
+              <div class="scene-number">Scene 4</div>
+              <div class="scene-shot">Over Shoulder</div>
+              <div class="scene-desc" style="font-family:'IBM Plex Sans Arabic';direction:rtl;text-align:right">عائشة تراقب محمد وهو يحمّص</div>
+              <div class="scene-meta">
+                <span class="output-tag">Handheld</span>
+                <span class="output-tag">Shallow DOF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector active"></div>
+
+    <!-- Phase 5: Dual QA -->
+    <div class="phase">
+      <div class="phase-label">Quality Assurance &middot; Round 1 of 1</div>
+      <div class="split-lines"><div class="split-center"></div></div>
+      <div class="parallel-row">
+        <div class="agent-card" onclick="toggleCard(this)">
+          <div class="agent-card-header">
+            <div class="agent-icon">&#9878;</div>
+            <div class="agent-info">
+              <div class="agent-name">The Lawyer</div>
+              <div class="agent-meta">Accuracy &middot; 8.4s</div>
+            </div>
+            <span class="agent-status done">Done</span>
+          </div>
+          <div class="agent-content">
+            <div class="output-section">
+              <div class="output-label">Issues Found: 1</div>
+              <div class="qa-issue resolved">
+                <div class="qa-issue-header">
+                  <span class="qa-issue-type resolved">&#10003; Resolved</span>
+                  <span class="qa-issue-target">&rarr; Cinematic Eye</span>
+                </div>
+                <div class="qa-issue-desc">Scene 7: Coffee farm has no establishing shot — crew won't know the setting. <em>Fixed in Round 1.</em></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="agent-card" onclick="toggleCard(this)">
+          <div class="agent-card-header">
+            <div class="agent-icon">&#128065;</div>
+            <div class="agent-info">
+              <div class="agent-name">The Viewer</div>
+              <div class="agent-meta">Audience &middot; 7.9s</div>
+            </div>
+            <span class="agent-status done">Done</span>
+          </div>
+          <div class="agent-content">
+            <div class="output-section">
+              <div class="output-label">Issues Found: 0</div>
+              <div class="output-text" style="color:var(--green)">All clear — pacing, emotional arc, and visual storytelling pass.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="merge-lines"><div class="merge-center"></div></div>
+
+      <!-- Merged QA result -->
+      <div style="text-align:center;padding:6px 0;font-size:11px;color:var(--green);font-weight:500">
+        &#10003; Approved after 1 revision round
+      </div>
+    </div>
+
+    <div class="connector active"></div>
+
+    <!-- Phase 6: Final Polish -->
+    <div class="phase">
+      <div class="agent-card" onclick="toggleCard(this)" style="border-color: rgba(52,211,153,0.2);">
+        <div class="agent-card-header">
+          <div class="agent-icon">&#10024;</div>
+          <div class="agent-info">
+            <div class="agent-name">Final Polish</div>
+            <div class="agent-meta">Editor &middot; 7.5s</div>
+          </div>
+          <span class="agent-status done">Done</span>
+          <span class="agent-chevron">&rsaquo;</span>
+        </div>
+        <div class="agent-content">
+          <div class="output-section">
+            <div class="output-text">Unified tone across revised sections. Arabic register consistent (Gulf dialect maintained). No seams from QA patches.</div>
+          </div>
+          <div style="margin-top:10px">
+            <button style="background:var(--text);color:var(--bg);border:none;padding:8px 20px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Export PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Status Counters -->
+  <div class="counters">
+    <div class="counter-card">
+      <div class="counter-label">
+        <span style="color:var(--green)">&#9679;</span> Done
+      </div>
+      <div class="counter-value green">11</div>
+    </div>
+    <div class="counter-card">
+      <div class="counter-label">
+        <span style="color:var(--amber)">&#9679;</span> Revised
+      </div>
+      <div class="counter-value amber">1</div>
+    </div>
+    <div class="counter-card">
+      <div class="counter-label">
+        <span style="color:var(--text-mid)">&#9679;</span> Rounds
+      </div>
+      <div class="counter-value dim">1</div>
+    </div>
+    <div class="counter-card">
+      <div class="counter-label">
+        <span style="color:var(--text-dim)">&#9679;</span> Time
+      </div>
+      <div class="counter-value dim">86s</div>
+    </div>
+  </div>
+
+  <!-- Activity Feed -->
+  <div class="activity">
+    <div class="activity-header">
+      <div class="activity-title">&#9889; Live Activity</div>
+      <div class="activity-count">14 events</div>
+    </div>
+    <div class="activity-list">
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--green)">&#10003;</span>
+        <span class="activity-time">12:05:58</span>
+        <span class="activity-agent">Polish</span>
+        <span class="activity-msg">Final polish complete — storyboard ready</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--green)">&#10003;</span>
+        <span class="activity-time">12:05:50</span>
+        <span class="activity-agent">QA</span>
+        <span class="activity-msg">Approved — all issues resolved after 1 round</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--green)">&#10003;</span>
+        <span class="activity-time">12:05:42</span>
+        <span class="activity-agent">Cinematic</span>
+        <span class="activity-msg">Revision complete — added establishing shot for coffee farm</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--amber)">&#9888;</span>
+        <span class="activity-time">12:05:30</span>
+        <span class="activity-agent">Lawyer</span>
+        <span class="activity-msg">1 issue: missing establishing shot in Scene 7 &rarr; Cinematic Eye</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--green)">&#10003;</span>
+        <span class="activity-time">12:05:28</span>
+        <span class="activity-agent">Viewer</span>
+        <span class="activity-msg">All clear — pacing and emotional arc pass</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--green)">&#10003;</span>
+        <span class="activity-time">12:05:20</span>
+        <span class="activity-agent">Continuity</span>
+        <span class="activity-msg">Merged — 20 scenes, all locations established, no gaps</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--green)">&#10003;</span>
+        <span class="activity-time">12:05:10</span>
+        <span class="activity-agent">News Eye</span>
+        <span class="activity-msg">Storyboard B — 16 scenes, tripod coverage style</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--green)">&#10003;</span>
+        <span class="activity-time">12:05:08</span>
+        <span class="activity-agent">Cinematic</span>
+        <span class="activity-msg">Storyboard A — 18 scenes, drone + handheld</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--green)">&#10003;</span>
+        <span class="activity-time">12:04:55</span>
+        <span class="activity-agent">Editor</span>
+        <span class="activity-msg">Merged scripts — Storyteller opening + Narrator structure, 13 beats</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--green)">&#10003;</span>
+        <span class="activity-time">12:04:44</span>
+        <span class="activity-agent">Narrator</span>
+        <span class="activity-msg">Script Draft A — 3 acts, 12 beats, 9:40</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--green)">&#10003;</span>
+        <span class="activity-time">12:04:43</span>
+        <span class="activity-agent">Storyteller</span>
+        <span class="activity-msg">Script Draft B — 3 acts, 14 beats, 10:05</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--green)">&#10003;</span>
+        <span class="activity-time">12:04:38</span>
+        <span class="activity-agent">Brief</span>
+        <span class="activity-msg">Cinematic documentary — intimate close-ups, natural light</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--green)">&#10003;</span>
+        <span class="activity-time">12:04:32</span>
+        <span class="activity-agent">Research</span>
+        <span class="activity-msg">Fact Sheet locked — 14 facts, 3 characters, 5 locations</span>
+      </div>
+      <div class="activity-item">
+        <span class="activity-icon" style="color:var(--blue)">&#9654;</span>
+        <span class="activity-time">12:04:24</span>
+        <span class="activity-agent">Pipeline</span>
+        <span class="activity-msg">Started — Saudi Coffee Traditions (10 min, Gulf dialect)</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleCard(el) {
+  el.classList.toggle('expanded');
+}
+</script>
+</body>
+</html>
