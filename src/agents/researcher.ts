@@ -21,6 +21,7 @@ OUTPUT FORMAT:
 You MUST respond with a single JSON object matching this exact structure:
 
 {
+  "genre": "string (detected genre in English — e.g. documentary, drama, comedy, historical, educational, cultural, news, promotional)",
   "facts": [
     { "key": "string (fact category)", "value": "string (the fact in Arabic)", "source": "string (which part of the text)" }
   ],
@@ -34,6 +35,11 @@ You MUST respond with a single JSON object matching this exact structure:
     { "name": "string (location name in Arabic)", "description": "string (description)", "events": [0] }
   ]
 }
+
+GENRE DETECTION:
+- Analyze the story's content, tone, and structure to determine the most fitting genre
+- Use one of: documentary, drama, family, comedy, historical, educational, cultural, news, promotional
+- If the story blends genres, pick the dominant one
 
 FACT CATEGORIES TO EXTRACT:
 - setting (الإطار الزمني والمكاني)
@@ -65,9 +71,6 @@ Respond ONLY with the JSON object. No markdown, no explanation, no wrapping.`;
 function buildUserPrompt(input: ResearcherInput): string {
   const parts = ["حلل النص التالي واستخرج ورقة الحقائق الكاملة:"];
 
-  if (input.genre) {
-    parts.push(`النوع: ${input.genre}`);
-  }
   if (input.dialect) {
     parts.push(`اللهجة: ${input.dialect}`);
   }

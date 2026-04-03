@@ -48,6 +48,7 @@ export const locationsSchema = z.array(locationSchema);
 // --- Full Fact Sheet (agent output) ---
 
 export const factSheetSchema = z.object({
+  genre: z.string().min(1),
   facts: factsSchema,
   nameRegistry: nameRegistrySchema,
   timeline: timelineSchema,

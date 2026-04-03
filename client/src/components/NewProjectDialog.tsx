@@ -9,11 +9,13 @@ interface NewProjectDialogProps {
   onCreated: () => void;
 }
 
-export function NewProjectDialog({ onClose, onCreated }: NewProjectDialogProps) {
+export function NewProjectDialog({
+  onClose,
+  onCreated,
+}: NewProjectDialogProps) {
   const { getToken } = useAuth();
   const [title, setTitle] = useState("");
   const [sourceText, setSourceText] = useState("");
-  const [genre, setGenre] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,96 +28,80 @@ export function NewProjectDialog({ onClose, onCreated }: NewProjectDialogProps) 
       await apiFetch("/api/projects", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          title,
-          sourceText,
-          genre: genre || undefined,
-        }),
+        body: JSON.stringify({ title, sourceText }),
       });
       onCreated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "فشل إنشاء المشروع");
+      setError(err instanceof Error ? err.message : "Failed to create project");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-sand-900 border border-sand-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-sand-800">
-          <h2 className="text-xl font-bold text-sand-50">مشروع جديد</h2>
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-lg w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 border-b border-gray-800">
+          <h2 className="text-sm font-semibold text-gray-50">New Project</h2>
           <button
             onClick={onClose}
-            className="text-sand-500 hover:text-sand-300 transition-colors cursor-pointer"
+            className="text-gray-500 hover:text-gray-300 transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-5">
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {error && (
-            <div className="bg-error/10 border border-error/20 text-error rounded-lg p-3 text-sm">
+            <div className="bg-error/10 border border-error/20 text-error rounded-md p-3 text-xs">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-sand-300 mb-1.5">
-              عنوان المشروع
+            <label className="block text-xs font-medium text-gray-400 mb-1.5">
+              Title
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="مثال: قصة الصياد والبحر"
+              placeholder="e.g. The Fisherman and the Sea"
               required
-              className="w-full bg-sand-950 border border-sand-700 rounded-lg px-4 py-2.5 text-sand-100 placeholder:text-sand-600 focus:outline-none focus:border-accent transition-colors"
+              className="w-full bg-gray-950 border border-gray-800 rounded-md px-3 py-2 text-sm text-gray-100 placeholder:text-gray-600 focus:outline-none focus:border-gray-600 transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-sand-300 mb-1.5">
-              النوع
-            </label>
-            <input
-              type="text"
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
-              placeholder="مثال: دراما عائلية، كوميدي، وثائقي"
-              className="w-full bg-sand-950 border border-sand-700 rounded-lg px-4 py-2.5 text-sand-100 placeholder:text-sand-600 focus:outline-none focus:border-accent transition-colors"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-sand-300 mb-1.5">
-              نص القصة
+            <label className="block text-xs font-medium text-gray-400 mb-1.5">
+              Story text
             </label>
             <textarea
               value={sourceText}
               onChange={(e) => setSourceText(e.target.value)}
-              placeholder="اكتب أو الصق نص القصة هنا..."
+              placeholder="Paste or write your story here..."
               required
               rows={8}
-              className="w-full bg-sand-950 border border-sand-700 rounded-lg px-4 py-2.5 text-sand-100 placeholder:text-sand-600 focus:outline-none focus:border-accent transition-colors resize-none leading-relaxed"
+              dir="rtl"
+              className="w-full bg-gray-950 border border-gray-800 rounded-md px-3 py-2 text-sm text-gray-100 font-arabic placeholder:text-gray-600 placeholder:font-sans focus:outline-none focus:border-gray-600 transition-colors resize-none leading-relaxed"
             />
-            <p className="text-xs text-sand-600 mt-1">
-              50 حرفاً على الأقل
+            <p className="text-[11px] text-gray-600 mt-1">
+              Minimum 50 characters
             </p>
           </div>
 
           <button
             type="submit"
             disabled={submitting || !title || sourceText.length < 50}
-            className="w-full bg-accent hover:bg-accent-dark disabled:bg-sand-700 disabled:cursor-not-allowed text-sand-950 font-semibold py-3 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-2"
+            className="w-full bg-gray-50 hover:bg-white disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed text-gray-950 text-sm font-medium py-2 rounded-md transition-colors cursor-pointer flex items-center justify-center gap-2"
           >
             {submitting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                جاري الإنشاء...
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Creating...
               </>
             ) : (
-              "إنشاء المشروع"
+              "Create project"
             )}
           </button>
         </form>
