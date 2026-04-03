@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectStatus {
+  DRAFT
+  RESEARCHING
+  WRITING
+  EDITING
+  DIRECTING
+  QA
+  COMPLETED
+  FAILED
+}
+
+enum PipelineStage {
+  RESEARCHER
+  SCRIPTWRITER
+  EDITOR
+  DIRECTOR
+  QA
+}
+
+enum RunStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REJECTED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects Project[]
+}
+
+model Project {
+  id             String        @id @default(cuid())
+  title          String
+  sourceText     String
+  sourceType     String        @default("story")
+  genre          String?
+  dialect        String?
+  targetDuration Int?
+  status         ProjectStatus @default(DRAFT)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  factSheet    FactSheet?
+  script       Script?
+  storyboard   Storyboard?
+  pipelineRuns PipelineRun[]
+
+  @@index([userId])
+}
+
+model FactSheet {
+  id           String   @id @default(cuid())
+  facts        Json
+  nameRegistry Json
+  timeline     Json?
+  locations    Json?
+  sources      Json?
+  lockedAt     DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  projectId String  @unique
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Script {
+  id        String   @id @default(cuid())
+  acts      Json
+  narration Json?
+  timing    Json?
+  version   Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projectId String  @unique
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Storyboard {
+  id          String   @id @default(cuid())
+  scenes      Json
+  transitions Json?
+  version     Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  projectId String  @unique
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model PipelineRun {
+  id        String        @id @default(cuid())
+  stage     PipelineStage
+  status    RunStatus     @default(PENDING)
+  input     Json?
+  output    Json?
+  error     String?
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime      @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([projectId, stage])
+}
