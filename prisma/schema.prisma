@@ -34,6 +34,37 @@ enum RunStatus {
   REJECTED
 }
 
+// --- Max Quality Pipeline ---
+
+enum AgentRole {
+  RESEARCHER
+  DIRECTOR_BRIEF
+  SCRIPTWRITER_NARRATOR
+  SCRIPTWRITER_STORYTELLER
+  EDITOR_MERGE
+  DIRECTOR_CINEMATIC
+  DIRECTOR_NEWS
+  CONTINUITY_CHECKER
+  QA_LAWYER
+  QA_VIEWER
+  EDITOR_FINAL
+}
+
+enum ExecutionStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum AgentRunStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  REVISION
+}
+
 model User {
   id        String   @id @default(cuid())
   clerkId   String   @unique
@@ -64,6 +95,7 @@ model Project {
   script       Script?
   storyboard   Storyboard?
   pipelineRuns PipelineRun[]
+  executions   PipelineExecution[]
 
   @@index([userId])
 }
@@ -123,4 +155,43 @@ model PipelineRun {
 
   @@index([projectId])
   @@index([projectId, stage])
+}
+
+// --- Max Quality Pipeline ---
+
+model PipelineExecution {
+  id        String          @id @default(cuid())
+  status    ExecutionStatus @default(QUEUED)
+  round     Int             @default(1)
+  startedAt DateTime?
+  endedAt   DateTime?
+  error     String?
+  createdAt DateTime        @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  agentRuns AgentRun[]
+
+  @@index([projectId])
+}
+
+model AgentRun {
+  id         String         @id @default(cuid())
+  role       AgentRole
+  status     AgentRunStatus @default(QUEUED)
+  round      Int            @default(1)
+  input      Json?
+  output     Json?
+  error      String?
+  durationMs Int?
+  startedAt  DateTime?
+  endedAt    DateTime?
+  createdAt  DateTime       @default(now())
+
+  executionId String
+  execution   PipelineExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  @@index([executionId])
+  @@index([executionId, role])
 }
