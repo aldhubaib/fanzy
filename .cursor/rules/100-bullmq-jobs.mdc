@@ -1,0 +1,30 @@
+---
+description: BullMQ job patterns for the agent pipeline
+globs: ["**/jobs/**", "**/workers/**", "**/queues/**"]
+alwaysApply: false
+---
+
+# BullMQ Job Patterns
+
+## Queue Structure
+
+Fanzy uses BullMQ for orchestrating the agent pipeline. Each agent step is a separate job.
+
+```
+pipeline queue:
+  job: "run-researcher"   → produces Fact Sheet
+  job: "run-scriptwriter" → produces structured script
+  job: "run-editor"       → produces polished script
+  job: "run-director"     → produces storyboard
+  job: "run-qa"           → validates everything
+```
+
+## Rules
+
+1. **One job per agent step** — never combine multiple agents in one job.
+2. **Jobs are idempotent** — safe to retry without side effects.
+3. **Store input/output in the database** — BullMQ job data should contain IDs, not large payloads.
+4. **Set reasonable timeouts** — LLM calls can take 30-60 seconds. Set job timeout to 120s.
+5. **Retry with backoff** — use exponential backoff for LLM API failures (429, 500, timeout).
+6. **Log structured errors** — every failed job writes to the PipelineRun error log.
+7. **Pipeline orchestration** — use BullMQ FlowProducer for sequential agent chains, or handle sequencing in the worker by queuing the next job on completion.

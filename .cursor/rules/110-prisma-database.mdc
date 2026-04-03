@@ -1,6 +1,6 @@
 ---
 description: Prisma and database conventions
-globs: prisma/** src/lib/db.ts src/generated/prisma/**
+globs: prisma/** src/lib/db.ts
 alwaysApply: false
 ---
 
@@ -8,33 +8,30 @@ alwaysApply: false
 
 ## Setup
 - Schema lives at `prisma/schema.prisma`
-- Config lives at `prisma.config.ts` (loads `.env.local` for `DATABASE_URL`)
-- Generated client output: `src/generated/prisma/` — never edit files in this directory
-- Singleton client in `src/lib/db.ts` using `PrismaPg` adapter for Neon compatibility
-- Always import from `@/lib/db` — never create a second Prisma client
+- Singleton client in `src/lib/db.ts` — never create a second Prisma client
+- Always import from `@/lib/db` — never import from generated client directly
+- Database: PostgreSQL on Railway
 
 ## Migrations
 - Run `pnpm prisma migrate dev --name description-of-change` for local dev
-- Run `pnpm prisma generate` after any schema change (also runs via `postinstall`)
+- Run `pnpm prisma generate` after any schema change
 - Never modify migration files after they've been applied
 
 ## Schema Conventions
-- Model names: `PascalCase` singular (e.g. `User`, `Project`, `Character`)
-- Field names: `camelCase` (e.g. `userId`, `scriptData`, `characterConfig`)
+- Model names: `PascalCase` singular (e.g. `Project`, `FactSheet`, `Script`, `Storyboard`)
+- Field names: `camelCase` (e.g. `userId`, `factSheetId`, `pipelineRunId`)
 - Use `cuid()` for all IDs
 - Always add `@@index` on foreign key fields and frequently queried fields
-- JSON fields use Prisma `Json` type
-- Enums: `SCREAMING_SNAKE_CASE` values (e.g. `PENDING`, `PROCESSING`, `COMPLETED`)
-- Timestamps: `createdAt` with `@default(now())`, `updatedAt` with `@updatedAt` where applicable
+- JSON fields use Prisma `Json` type — used for agent input/output payloads
+- Enums: `SCREAMING_SNAKE_CASE` values (e.g. `PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`)
+- Timestamps: `createdAt` with `@default(now())`, `updatedAt` with `@updatedAt`
 
 ## Query Patterns
 - Always scope user-owned data to `userId` in `where` clauses
 - Use `findFirst` with `where: { id, userId }` instead of `findUnique` when enforcing ownership
 - Use `deleteMany` with `where: { id, userId }` for ownership-scoped deletes
-- For upserts (webhook syncs), use the unique external ID as the `where` key (e.g. `clerkId`)
 
 ## Forbidden
-- Never import from `@/generated/prisma/*` in application code — always go through `@/lib/db`
 - Never write raw SQL unless Prisma cannot handle the query — explain why in a comment
 - Never store secrets or API keys in the database
-- Never commit `src/generated/prisma/` changes independently — they are auto-generated
+- Never commit generated Prisma client files independently — they are auto-generated
