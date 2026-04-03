@@ -12,6 +12,7 @@
 - [ ] Script format system — flexible block schema that adapts per creator profile
 - [ ] Pipeline — Creator Profile injection — every agent receives profile as read-only context alongside Fact Sheet
 - [ ] Agent prompts — profile-aware writing — Scriptwriter, Editor, Director prompts adapt to format, flow, dialect, brevity, narrator role
+- [ ] 3-way narrative fan-out — pipeline produces 3 final storyboards (linear, non-linear, end-first), user picks their favorite
 - [ ] QA — profile-aware checks — source fidelity, name accuracy, format compliance, dialogue brevity, creator-specific rules
 - [ ] BullMQ pipeline — job queue wiring for sequential agent orchestration
 - [ ] Dashboard UI — create project, view pipeline status, browse storyboard output

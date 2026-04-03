@@ -35,7 +35,7 @@ export const dialogueRulesSchema = z.object({
   /** Max spoken lines per block (e.g. 5 for e3wais) */
   maxLinesPerBlock: z.number().int().positive().default(5),
   /** One clear point per line — no padding */
-  brevity: z.enum(["strict", "moderate", "relaxed"]).default("strict"),
+  brevity: z.enum(["minimal", "concise", "standard", "unrestricted"]).default("concise"),
   /** Extra rules as free text (e.g. "no invented dialogue for real people") */
   extraRules: z.array(z.string()).default([]),
 });
@@ -48,8 +48,10 @@ export const narrativeFlowSchema = z.object({
    * "discovery", "clues", "exposure", "punishment", "reflection"])
    */
   beats: z.array(z.string().min(1)).min(1),
-  /** Whether the flow is strictly linear or allows flashbacks/nonlinear */
-  structure: z.enum(["linear", "nonlinear", "end_first"]).default("linear"),
+  /** All 3 structures are always produced — the user picks after generation */
+  structures: z
+    .array(z.enum(["linear", "nonlinear", "end_first"]))
+    .default(["linear", "nonlinear", "end_first"]),
 });
 
 // --- QA Rules ---
@@ -87,10 +89,19 @@ export const scriptFormatSchema = z.object({
 
 // --- Full Creator Profile ---
 
+export const TONES = [
+  "dark_cinematic",
+  "suspenseful",
+  "journalistic",
+  "emotional",
+  "comedic",
+  "neutral",
+] as const;
+
 export const creatorProfileSchema = z.object({
   name: z.string().min(1),
   dialect: z.enum(DIALECTS),
-  tone: z.string().min(1),
+  tone: z.enum(TONES),
   narratorRole: z.enum(NARRATOR_ROLES),
   genre: z.enum(GENRES),
   scriptFormat: scriptFormatSchema,
@@ -110,6 +121,7 @@ export const updateProfileInputSchema = creatorProfileSchema.partial();
 export type Dialect = (typeof DIALECTS)[number];
 export type NarratorRole = (typeof NARRATOR_ROLES)[number];
 export type Genre = (typeof GENRES)[number];
+export type Tone = (typeof TONES)[number];
 export type DialogueRules = z.infer<typeof dialogueRulesSchema>;
 export type NarrativeFlow = z.infer<typeof narrativeFlowSchema>;
 export type QARules = z.infer<typeof qaRulesSchema>;
