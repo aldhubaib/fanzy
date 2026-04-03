@@ -33,8 +33,7 @@ export async function resolveUser(
     });
 
     if (!dbUser) {
-      const client = await clerkClient();
-      const clerkUser = await client.users.getUser(auth.userId);
+      const clerkUser = await clerkClient.users.getUser(auth.userId);
       const email =
         clerkUser.emailAddresses.find(
           (e) => e.id === clerkUser.primaryEmailAddressId,
