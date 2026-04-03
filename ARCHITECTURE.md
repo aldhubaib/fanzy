@@ -29,6 +29,8 @@ fanzy/
 │   │   ├── db.ts              # Prisma client singleton
 │   │   ├── env.ts             # Zod-validated environment config
 │   │   └── redis.ts           # Redis connection for BullMQ
+│   ├── middleware/
+│   │   └── auth.ts            # Clerk auth middleware (clerkAuth + requireSignIn)
 │   ├── agents/
 │   │   └── researcher.ts      # Researcher agent — Claude prompt + FactSheet extraction
 │   ├── services/
@@ -44,8 +46,8 @@ fanzy/
 │   ├── index.html             # HTML shell (RTL, Arabic fonts)
 │   ├── vite.config.ts         # Vite config with API proxy
 │   └── src/
-│       ├── main.tsx           # React entry
-│       ├── App.tsx            # Root component
+│       ├── main.tsx           # React entry (ClerkProvider wraps app)
+│       ├── App.tsx            # Root component (sign-in / signed-in views)
 │       └── index.css          # Tailwind + design tokens
 ├── package.json               # Backend deps + scripts
 ├── tsconfig.json              # Backend TypeScript config
@@ -120,7 +122,16 @@ Each agent follows a three-layer architecture:
 5. **Railway for everything** — PostgreSQL, Redis, and app container in one place
 6. **IBM Plex Sans Arabic** — primary font, designed for Arabic readability
 7. **RTL-first frontend** — HTML lang="ar" dir="rtl" from the start
+8. **Google-only auth via Clerk** — `@clerk/react` on frontend, `@clerk/express` middleware on backend
+
+## Authentication
+
+- **Frontend:** `@clerk/react` — `<ClerkProvider>` in `main.tsx`, `<Show>`, `<SignInButton>`, `<UserButton>` in `App.tsx`
+- **Backend:** `@clerk/express` — `clerkAuth` middleware globally, `requireSignIn` on protected routes
+- **Public routes:** `GET /api/health`, `GET /`
+- **Protected routes:** `POST /api/projects/:id/research` (and all future agent/project routes)
+- **Environment:** `VITE_CLERK_PUBLISHABLE_KEY` in `client/.env`, `CLERK_SECRET_KEY` in root `.env`
 
 ## Environment Variables
 
-See `.env.example` for the full list. Required: `DATABASE_URL`, `REDIS_URL`, `ANTHROPIC_API_KEY`. Optional during dev: `CLERK_*`, `OPENAI_API_KEY`.
+See `.env.example` for the full list. Required: `DATABASE_URL`, `REDIS_URL`, `ANTHROPIC_API_KEY`, `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`. Optional during dev: `OPENAI_API_KEY`.
