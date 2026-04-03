@@ -33,17 +33,48 @@ fanzy/
 │   │   ├── auth.ts            # Clerk auth middleware (clerkAuth + requireSignIn)
 │   │   └── resolve-user.ts   # Resolves Clerk session → DB user (auto-creates on first call)
 │   ├── agents/
-│   │   └── researcher.ts      # Researcher agent — Claude prompt + FactSheet extraction
+│   │   ├── researcher.ts      # Researcher — Fact Sheet + Name Registry from raw text
+│   │   ├── director-brief.ts  # Director Brief — visual tone, palette, camera style
+│   │   ├── scriptwriter.ts    # Scriptwriter — narrator & storyteller personas
+│   │   ├── editor.ts          # Editor — merge (best-of-2 scripts) & final polish
+│   │   ├── director.ts        # Director — cinematic & news eye storyboards
+│   │   ├── continuity.ts      # Continuity Checker — spatial/temporal validation
+│   │   └── qa.ts              # QA — lawyer (accuracy) & viewer (audience) review
+│   ├── pipeline/
+│   │   ├── queues.ts          # BullMQ queue definitions (11 queues, one per agent)
+│   │   ├── orchestrator.ts    # Pipeline state machine — flow control, parallel fan-out/fan-in, QA loop
+│   │   ├── events.ts          # SSE event bus for real-time pipeline updates
+│   │   ├── worker-utils.ts    # Shared worker lifecycle (mark running → execute → save → next)
+│   │   └── workers/
+│   │       ├── index.ts       # Worker registry — starts all 11 workers
+│   │       ├── researcher.ts
+│   │       ├── director-brief.ts
+│   │       ├── scriptwriter.ts
+│   │       ├── editor.ts
+│   │       ├── director.ts
+│   │       ├── continuity.ts
+│   │       └── qa.ts
 │   ├── services/
-│   │   └── researcher.ts      # Researcher orchestration — pipeline tracking + persistence
+│   │   └── researcher.ts      # Legacy sync researcher (pre-pipeline)
 │   ├── routes/
-│   │   ├── health.ts          # Health check endpoint
+│   │   ├── health.ts          # GET /api/health
 │   │   ├── projects.ts        # GET/POST /api/projects, GET /api/projects/:id
-│   │   └── researcher.ts      # POST /api/projects/:id/research
+│   │   ├── researcher.ts      # POST /api/projects/:id/research (legacy)
+│   │   └── pipeline.ts        # POST start, GET status, GET SSE events
 │   ├── types/
-│   │   ├── fact-sheet.ts      # Zod schemas for FactSheet, NameRegistry, Timeline, Locations
-│   │   └── researcher.ts      # Researcher input/output contracts
-│   └── workers/               # BullMQ job workers (agent steps)
+│   │   ├── pipeline.ts        # Agent roles, parallel groups, pipeline events
+│   │   ├── fact-sheet.ts      # FactSheet, NameRegistry, Timeline, Locations
+│   │   ├── researcher.ts      # Researcher I/O contracts
+│   │   ├── visual-brief.ts    # VisualBrief — Director Brief output
+│   │   ├── script.ts          # Script — acts, scenes, dialogue, narration
+│   │   ├── scene.ts           # SceneCard, Storyboard — visual direction
+│   │   ├── qa-report.ts       # QAReport — issues, severity, target agent
+│   │   ├── director-brief.ts  # Director Brief I/O
+│   │   ├── scriptwriter.ts    # Scriptwriter I/O
+│   │   ├── editor.ts          # Editor I/O (merge + final)
+│   │   ├── director.ts        # Director I/O
+│   │   ├── continuity.ts      # Continuity Checker I/O
+│   │   └── qa.ts              # QA I/O
 ├── client/
 │   ├── index.html             # HTML shell (RTL, Arabic fonts)
 │   ├── vite.config.ts         # Vite config with API proxy
@@ -147,15 +178,27 @@ Each agent follows a three-layer architecture:
 |-------|------|----------------|
 | Types | `src/types/<agent>.ts` | Zod input/output schemas |
 | Agent | `src/agents/<agent>.ts` | LLM call + response parsing (pure function, no DB) |
-| Service | `src/services/<agent>.ts` | Orchestration: PipelineRun tracking, DB persistence, status updates |
+| Worker | `src/pipeline/workers/<agent>.ts` | BullMQ job handler — gathers inputs, calls agent, saves output, triggers next step |
 
-**Researcher agent** (implemented):
-- **Input:** Project's `sourceText`, optional `genre` and `dialect`
-- **Output:** Validated `FactSheet` (facts, nameRegistry, timeline, locations)
-- **LLM:** Claude (claude-sonnet-4-20250514) with structured JSON output
-- **Endpoint:** `POST /api/projects/:id/research`
-- **Immutability:** Once a FactSheet is created, the service rejects re-research (HTTP 409)
-- **Error handling:** Retries up to 3 attempts with exponential backoff; failures update PipelineRun and project status
+All agents use **Claude Sonnet 4** with structured JSON output, up to 3 retry attempts with exponential backoff.
+
+## Pipeline API
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/projects/:id/pipeline/start` | POST | Starts the full 11-agent pipeline |
+| `/api/projects/:id/pipeline/status` | GET | Returns execution status + all agent runs |
+| `/api/projects/:id/pipeline/events` | GET (SSE) | Real-time event stream for pipeline progress |
+
+## Pipeline Orchestration
+
+The orchestrator (`src/pipeline/orchestrator.ts`) is an event-driven state machine:
+
+1. **Sequential flow:** Each agent completion triggers the next step
+2. **Parallel fan-out:** Scriptwriters, Directors, and QA agents run in pairs simultaneously
+3. **Fan-in sync:** The orchestrator waits for both parallel agents to complete before proceeding
+4. **QA revision loop:** If QA finds critical/major issues (up to 3 rounds), corrections route back to the earliest affected agent
+5. **Persistence:** Every agent's input, output, duration, and errors are stored in `AgentRun` records
 
 ## Key Decisions
 
