@@ -5,35 +5,33 @@ import { Clapperboard } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { ProjectsPage } from "@/pages/ProjectsPage";
 import { ProjectPage } from "@/pages/ProjectPage";
+import { PipelineDemoPage } from "@/pages/PipelineDemoPage";
 
 function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="flex items-center justify-between px-6 py-4 border-b border-sand-800/50">
+      <header className="flex items-center justify-between px-6 py-4 border-b border-gray-800/50">
         <div className="flex items-center gap-2">
-          <Clapperboard className="w-6 h-6 text-accent" />
-          <span className="text-lg font-semibold text-sand-50">Fanzy</span>
+          <Clapperboard className="w-5 h-5 text-gray-400" />
+          <span className="text-sm font-semibold text-gray-50">Fanzy</span>
         </div>
         <SignInButton mode="modal">
-          <button className="bg-accent hover:bg-accent-dark text-sand-950 font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer">
-            تسجيل الدخول
+          <button className="bg-gray-50 hover:bg-white text-gray-950 text-sm font-medium px-4 py-1.5 rounded-md transition-colors cursor-pointer">
+            Sign in
           </button>
         </SignInButton>
       </header>
       <main className="flex-1 flex items-center justify-center">
-        <div className="text-center space-y-6">
-          <div className="flex items-center justify-center gap-3">
-            <Clapperboard className="w-10 h-10 text-accent" />
-            <h1 className="text-4xl font-bold tracking-tight text-sand-50">
-              Fanzy
-            </h1>
-          </div>
-          <p className="text-sand-400 text-lg max-w-md mx-auto">
-            نظام الستوريبورد الذكي لإنتاج الفيديو العربي
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-semibold tracking-tight text-gray-50">
+            Fanzy
+          </h1>
+          <p className="text-gray-500 text-base max-w-sm mx-auto">
+            AI-powered storyboard system for Arabic video production
           </p>
           <SignInButton mode="modal">
-            <button className="bg-accent hover:bg-accent-dark text-sand-950 font-semibold px-8 py-3 rounded-xl text-lg transition-colors cursor-pointer">
-              ابدأ الآن
+            <button className="bg-gray-50 hover:bg-white text-gray-950 font-medium px-6 py-2 rounded-md transition-colors cursor-pointer">
+              Get started
             </button>
           </SignInButton>
         </div>
@@ -53,6 +51,7 @@ export function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<ProjectsPage />} />
             <Route path="/projects/:id" element={<ProjectPage />} />
+            <Route path="/pipeline-demo" element={<PipelineDemoPage />} />
           </Route>
         </Routes>
       </Show>

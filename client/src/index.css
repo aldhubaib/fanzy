@@ -1,34 +1,42 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-arabic: "IBM Plex Sans Arabic", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 
-  --color-sand-50: #faf9f7;
-  --color-sand-100: #f2f0ec;
-  --color-sand-200: #e5e2db;
-  --color-sand-300: #d1cdc3;
-  --color-sand-400: #b3ad9f;
-  --color-sand-500: #968f7e;
-  --color-sand-600: #7a7367;
-  --color-sand-700: #5e5850;
-  --color-sand-800: #433e39;
-  --color-sand-900: #2a2724;
-  --color-sand-950: #171614;
-
-  --color-accent: #e07a3a;
-  --color-accent-light: #f4a261;
-  --color-accent-dark: #c15e20;
+  --color-gray-50: #fafafa;
+  --color-gray-100: #f0f0f0;
+  --color-gray-200: #e0e0e0;
+  --color-gray-300: #c0c0c0;
+  --color-gray-400: #a0a0a0;
+  --color-gray-500: #787878;
+  --color-gray-600: #585858;
+  --color-gray-700: #383838;
+  --color-gray-800: #262626;
+  --color-gray-900: #1a1a1a;
+  --color-gray-950: #0e0e0e;
 
   --color-success: #4ade80;
   --color-warning: #fbbf24;
-  --color-error: #fb7185;
+  --color-error: #f87171;
   --color-info: #60a5fa;
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-sand-950);
-  color: var(--color-sand-100);
+  background-color: var(--color-gray-950);
+  color: var(--color-gray-200);
   margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-arabic {
+  font-family: var(--font-arabic);
+}
+
+@keyframes progress {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
 }

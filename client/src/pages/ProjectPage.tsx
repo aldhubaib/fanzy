@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "@clerk/react";
-import { ArrowRight, Loader2, Play, AlertCircle } from "lucide-react";
+import { ArrowLeft, Loader2, Play, AlertCircle } from "lucide-react";
 
 import { apiFetch } from "@/lib/api";
 import { StatusBadge } from "@/components/StatusBadge";
 import { FactSheetView } from "@/components/FactSheetView";
+import { PipelineView } from "@/components/pipeline/PipelineView";
+import { DEMO_PIPELINE } from "@/components/pipeline/demo-data";
 
 interface PipelineRun {
   id: string;
@@ -51,7 +53,7 @@ export function ProjectPage() {
       setProject(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "فشل تحميل المشروع");
+      setError(err instanceof Error ? err.message : "Failed to load project");
     } finally {
       setLoading(false);
     }
@@ -72,7 +74,7 @@ export function ProjectPage() {
       });
       await loadProject();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "فشل تشغيل الباحث");
+      setError(err instanceof Error ? err.message : "Researcher failed");
     } finally {
       setResearching(false);
     }
@@ -81,44 +83,58 @@ export function ProjectPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="w-8 h-8 text-accent animate-spin" />
+        <Loader2 className="w-5 h-5 text-gray-500 animate-spin" />
       </div>
     );
   }
 
   if (!project) {
     return (
-      <div className="max-w-4xl mx-auto px-6 py-8 text-center">
-        <p className="text-error">{error ?? "المشروع غير موجود"}</p>
-        <Link to="/" className="text-accent hover:underline mt-4 inline-block">
-          العودة للمشاريع
+      <div className="max-w-3xl mx-auto px-6 py-8 text-center">
+        <p className="text-error text-sm">{error ?? "Project not found"}</p>
+        <Link
+          to="/"
+          className="text-gray-400 hover:text-gray-200 text-xs mt-4 inline-block"
+        >
+          Back to projects
         </Link>
       </div>
     );
   }
 
-  const canResearch = project.status === "DRAFT" || project.status === "FAILED";
+  const canResearch =
+    project.status === "DRAFT" || project.status === "FAILED";
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
+    <div className="max-w-3xl mx-auto px-6 py-8">
       <Link
         to="/"
-        className="inline-flex items-center gap-1 text-sm text-sand-500 hover:text-sand-300 mb-6 transition-colors"
+        className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-400 mb-6 transition-colors"
       >
-        <ArrowRight className="w-4 h-4" />
-        المشاريع
+        <ArrowLeft className="w-3.5 h-3.5" />
+        Projects
       </Link>
 
-      <div className="flex items-start justify-between mb-8">
+      <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-sand-50 mb-2">
+          <h1 className="text-lg font-semibold text-gray-50 mb-1">
             {project.title}
           </h1>
-          <div className="flex items-center gap-3 text-sm text-sand-500">
-            {project.genre && <span>{project.genre}</span>}
+          <div className="flex items-center gap-2 text-xs text-gray-600">
+            {project.genre && (
+              <>
+                <span>{project.genre}</span>
+                <span>·</span>
+              </>
+            )}
             <span>
-              {new Date(project.createdAt).toLocaleDateString("ar-SA")}
+              {new Date(project.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
             </span>
+            <span>·</span>
             <StatusBadge status={project.status} />
           </div>
         </div>
@@ -127,17 +143,17 @@ export function ProjectPage() {
           <button
             onClick={triggerResearch}
             disabled={researching}
-            className="flex items-center gap-2 bg-accent hover:bg-accent-dark disabled:bg-sand-700 disabled:cursor-not-allowed text-sand-950 font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 bg-gray-50 hover:bg-white disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed text-gray-950 text-xs font-medium px-3 py-1.5 rounded-md transition-colors cursor-pointer"
           >
             {researching ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                جاري التحليل...
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                Analyzing...
               </>
             ) : (
               <>
-                <Play className="w-4 h-4" />
-                تشغيل الباحث
+                <Play className="w-3.5 h-3.5" />
+                Run Researcher
               </>
             )}
           </button>
@@ -145,64 +161,62 @@ export function ProjectPage() {
       </div>
 
       {error && (
-        <div className="bg-error/10 border border-error/20 text-error rounded-lg p-4 mb-6 flex items-start gap-2">
-          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+        <div className="bg-error/10 border border-error/20 text-error rounded-md p-3 text-xs mb-6 flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
 
-      <div className="bg-sand-900/30 border border-sand-800/50 rounded-xl p-5 mb-8">
-        <h2 className="text-sm font-medium text-sand-400 mb-2">نص القصة</h2>
-        <p className="text-sand-200 text-sm leading-relaxed whitespace-pre-wrap">
-          {project.sourceText}
-        </p>
-      </div>
+      <details className="mb-8 group">
+        <summary className="text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-300 transition-colors select-none">
+          Source text
+        </summary>
+        <div className="mt-3 bg-gray-900 border border-gray-800/50 rounded-md p-4">
+          <p
+            dir="rtl"
+            className="text-sm text-gray-300 font-arabic leading-relaxed whitespace-pre-wrap"
+          >
+            {project.sourceText}
+          </p>
+        </div>
+      </details>
 
       {project.factSheet ? (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-sand-50">ورقة الحقائق</h2>
-            <span className="text-xs text-sand-600">
-              مقفلة منذ{" "}
-              {new Date(project.factSheet.lockedAt).toLocaleDateString("ar-SA")}
+            <h2 className="text-sm font-semibold text-gray-50">Fact Sheet</h2>
+            <span className="text-[11px] text-gray-600">
+              Locked{" "}
+              {new Date(project.factSheet.lockedAt).toLocaleDateString(
+                "en-US",
+                { month: "short", day: "numeric" },
+              )}
             </span>
           </div>
-          <FactSheetView data={project.factSheet as Parameters<typeof FactSheetView>[0]["data"]} />
+          <FactSheetView
+            data={
+              project.factSheet as Parameters<typeof FactSheetView>[0]["data"]
+            }
+          />
         </div>
       ) : (
-        !canResearch && (
-          <div className="text-center py-12 text-sand-500">
-            <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin text-accent" />
-            <p>جاري تحليل القصة...</p>
+        canResearch && (
+          <div className="text-center py-16 text-gray-600 text-xs">
+            Run the Researcher to generate a Fact Sheet from the source text.
           </div>
         )
       )}
 
-      {project.pipelineRuns.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-lg font-semibold text-sand-100 mb-3">
-            سجل العمليات
-          </h2>
-          <div className="space-y-2">
-            {project.pipelineRuns.map((run) => (
-              <div
-                key={run.id}
-                className="bg-sand-900/50 rounded-lg p-3 flex items-center justify-between text-sm"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-sand-400 font-mono text-xs">
-                    {run.stage}
-                  </span>
-                  <StatusBadge status={run.status} />
-                </div>
-                <span className="text-sand-600 text-xs">
-                  {new Date(run.createdAt).toLocaleString("ar-SA")}
-                </span>
-              </div>
-            ))}
-          </div>
+      {!canResearch && !project.factSheet && (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-5 h-5 text-gray-600 animate-spin" />
         </div>
       )}
+
+      <div className="mt-10">
+        <h2 className="text-xs font-medium text-gray-500 mb-4">Pipeline</h2>
+        <PipelineView data={DEMO_PIPELINE} />
+      </div>
     </div>
   );
 }
