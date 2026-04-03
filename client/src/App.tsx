@@ -1,23 +1,178 @@
-import { useEffect, useState } from "react";
-import { Show, SignInButton, UserButton } from "@clerk/react";
-import { Clapperboard } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Show, SignInButton, UserButton, useAuth } from "@clerk/react";
+import { Clapperboard, ArrowRight } from "lucide-react";
 
-interface HealthStatus {
-  status: string;
-  checks: Record<string, string>;
-  timestamp: string;
+import { apiFetch } from "./lib/api";
+import { CreatorProfileList } from "./components/CreatorProfileList";
+import { CreatorProfileForm } from "./components/CreatorProfileForm";
+
+interface ProfileSummary {
+  id: string;
+  name: string;
+  dialect: string;
+  tone: string;
+  narratorRole: string;
+  genre: string;
+  scriptFormat: unknown;
+  dialogueRules: unknown;
+  narrativeFlow: unknown;
+  qaRules: unknown;
+  updatedAt: string;
+}
+
+type View = "list" | "create" | { edit: string };
+
+function Dashboard() {
+  const { getToken } = useAuth();
+  const [profiles, setProfiles] = useState<ProfileSummary[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [view, setView] = useState<View>("list");
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = await getToken();
+      const data = await apiFetch<ProfileSummary[]>(
+        "/api/creator-profiles",
+        token,
+      );
+      setProfiles(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "فشل تحميل البروفايلات");
+    } finally {
+      setLoading(false);
+    }
+  }, [getToken]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleSave = async (data: Record<string, unknown>) => {
+    try {
+      setSaving(true);
+      setError(null);
+      const token = await getToken();
+
+      if (typeof view === "object" && "edit" in view) {
+        await apiFetch(`/api/creator-profiles/${view.edit}`, token, {
+          method: "PATCH",
+          body: JSON.stringify(data),
+        });
+      } else {
+        await apiFetch("/api/creator-profiles", token, {
+          method: "POST",
+          body: JSON.stringify(data),
+        });
+      }
+
+      await load();
+      setView("list");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "فشل الحفظ");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      setError(null);
+      const token = await getToken();
+      await apiFetch(`/api/creator-profiles/${id}`, token, {
+        method: "DELETE",
+      });
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "فشل الحذف");
+    }
+  };
+
+  const editProfile =
+    typeof view === "object" && "edit" in view
+      ? profiles.find((p) => p.id === view.edit)
+      : null;
+
+  return (
+    <div className="w-full max-w-4xl mx-auto px-6 py-8">
+      {error && (
+        <div className="bg-error/10 border border-error/30 text-error rounded-lg px-4 py-2.5 mb-6 text-sm">
+          {error}
+        </div>
+      )}
+
+      {view === "list" ? (
+        <CreatorProfileList
+          profiles={profiles}
+          onEdit={(id) => setView({ edit: id })}
+          onDelete={handleDelete}
+          onCreate={() => setView("create")}
+          loading={loading}
+        />
+      ) : (
+        <div className="space-y-4">
+          <button
+            onClick={() => setView("list")}
+            className="flex items-center gap-1.5 text-sm text-sand-400 hover:text-sand-200 transition-colors cursor-pointer"
+          >
+            <ArrowRight className="w-4 h-4" />
+            Back to list
+          </button>
+
+          <h2 className="text-xl font-bold text-sand-50">
+            {editProfile ? `Edit: ${editProfile.name}` : "New Profile"}
+          </h2>
+
+          <CreatorProfileForm
+            initial={
+              editProfile
+                ? {
+                    name: editProfile.name,
+                    dialect: editProfile.dialect,
+                    tone: editProfile.tone,
+                    narratorRole: editProfile.narratorRole,
+                    genre: editProfile.genre,
+                    scriptFormat: editProfile.scriptFormat as {
+                      hasTimeRange: boolean;
+                      blocks: {
+                        label: string;
+                        description: string;
+                        required: boolean;
+                      }[];
+                    },
+                    dialogueRules: editProfile.dialogueRules as {
+                      speakerPolicy: string;
+                      maxLinesPerBlock: number;
+                      brevity: string;
+                      extraRules: string[];
+                    },
+                    narrativeFlow: editProfile.narrativeFlow as {
+                      beats: string[];
+                      structures: string[];
+                    },
+                    qaRules: editProfile.qaRules as {
+                      sourceOnly: boolean;
+                      strictNameAccuracy: boolean;
+                      checkBrevity: boolean;
+                      checkFormat: boolean;
+                      extraChecks: string[];
+                    },
+                  }
+                : undefined
+            }
+            onSave={handleSave}
+            onCancel={() => setView("list")}
+            saving={saving}
+          />
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function App() {
-  const [health, setHealth] = useState<HealthStatus | null>(null);
-
-  useEffect(() => {
-    fetch("/api/health")
-      .then((r) => r.json())
-      .then(setHealth)
-      .catch(() => setHealth(null));
-  }, []);
-
   return (
     <div className="min-h-screen flex flex-col">
       <header className="flex items-center justify-between px-6 py-4 border-b border-sand-800/50">
@@ -38,59 +193,30 @@ export function App() {
         </Show>
       </header>
 
-      <main className="flex-1 flex items-center justify-center">
+      <main className="flex-1">
         <Show when="signed-out">
-          <div className="text-center space-y-6">
-            <div className="flex items-center justify-center gap-3">
-              <Clapperboard className="w-10 h-10 text-accent" />
-              <h1 className="text-4xl font-bold tracking-tight text-sand-50">
-                Fanzy
-              </h1>
+          <div className="flex-1 flex items-center justify-center min-h-[calc(100vh-65px)]">
+            <div className="text-center space-y-6">
+              <div className="flex items-center justify-center gap-3">
+                <Clapperboard className="w-10 h-10 text-accent" />
+                <h1 className="text-4xl font-bold tracking-tight text-sand-50">
+                  Fanzy
+                </h1>
+              </div>
+              <p className="text-sand-400 text-lg max-w-md mx-auto">
+                نظام الستوريبورد الذكي لإنتاج الفيديو العربي
+              </p>
+              <SignInButton mode="modal">
+                <button className="bg-accent hover:bg-accent-dark text-sand-950 font-semibold px-8 py-3 rounded-xl text-lg transition-colors cursor-pointer">
+                  ابدأ الآن
+                </button>
+              </SignInButton>
             </div>
-            <p className="text-sand-400 text-lg max-w-md mx-auto">
-              نظام الستوريبورد الذكي لإنتاج الفيديو العربي
-            </p>
-            <SignInButton mode="modal">
-              <button className="bg-accent hover:bg-accent-dark text-sand-950 font-semibold px-8 py-3 rounded-xl text-lg transition-colors cursor-pointer">
-                ابدأ الآن
-              </button>
-            </SignInButton>
           </div>
         </Show>
 
         <Show when="signed-in">
-          <div className="text-center space-y-6">
-            <h2 className="text-2xl font-bold text-sand-50">
-              مرحباً بك في Fanzy
-            </h2>
-            <p className="text-sand-400 max-w-md mx-auto">
-              لوحة التحكم قادمة قريباً — الآن أنت مسجل بنجاح
-            </p>
-
-            {health && (
-              <div className="mt-8 bg-sand-900/50 rounded-xl p-4 text-sm font-mono text-sand-300 inline-block">
-                <div className="flex items-center gap-2 mb-2">
-                  <span
-                    className={`w-2 h-2 rounded-full ${health.status === "healthy" ? "bg-success" : "bg-error"}`}
-                  />
-                  <span>{health.status}</span>
-                </div>
-                {Object.entries(health.checks).map(([key, val]) => (
-                  <div
-                    key={key}
-                    className="flex justify-between gap-6 text-xs"
-                  >
-                    <span className="text-sand-500">{key}</span>
-                    <span
-                      className={val === "ok" ? "text-success" : "text-error"}
-                    >
-                      {val}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <Dashboard />
         </Show>
       </main>
     </div>
