@@ -22,12 +22,12 @@ Follow these steps in order when building a new feature.
 | Layer | Location | Example |
 |-------|----------|---------|
 | Schema | `prisma/schema.prisma` | New model or field |
-| Database | `src/lib/db.ts` | Query helpers |
-| Services | `src/lib/services/` | Business logic (script parser, generation) |
-| API | `src/app/api/` | New or modified endpoint |
-| Inngest | `src/lib/inngest/` | Background job changes |
-| Store | `src/stores/` | Client-side state management |
-| Components | `src/components/` | UI for new feature |
+| Services | `src/services/` | Business logic (agent orchestration, fact sheet) |
+| Agents | `src/agents/` | New agent or agent modification |
+| Prompts | `prompts/` | Persona prompt files |
+| API | `src/routes/` | New or modified Express endpoint |
+| Jobs | `src/jobs/` | BullMQ worker/queue changes |
+| Frontend | `frontend/src/` | React UI components |
 | Types | `src/types/` | New types or modifications |
 
 ## Step 3: Create a Branch

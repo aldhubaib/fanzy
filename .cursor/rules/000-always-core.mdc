@@ -1,0 +1,49 @@
+---
+description: Core identity and absolute rules for Fanzy
+globs:
+alwaysApply: true
+---
+
+# Fanzy — Core
+
+## What Fanzy Is
+
+Fanzy is a **multi-AI-agent storyboard system** for Arabic video production. It takes raw stories or scripts and produces production-ready storyboards that videographers can follow on set.
+
+The core innovation is the **Fact Sheet + Name Registry** — a locked, immutable document produced by the Researcher agent that every downstream agent references. This architecturally prevents LLM inconsistency (name drift, fact drift) which is the #1 problem with AI-generated Arabic content.
+
+## Tech Stack
+
+- **Runtime**: Node.js + TypeScript
+- **API**: Express
+- **Database**: PostgreSQL + Prisma
+- **Auth**: Clerk
+- **Queue**: BullMQ + Redis
+- **LLM**: Claude API (Anthropic) + OpenAI API (GPT-4o)
+- **Frontend**: React + Vite + Tailwind CSS + Lucide icons
+- **PDF Export**: Puppeteer
+- **Deployment**: Railway
+- **Repo**: github.com/aldhubaib/fanzy
+
+## Absolute Rules
+
+1. **Fact Sheet is immutable** — once created by the Researcher, no code path may modify it. All agents receive it read-only.
+2. **Name Registry is deterministic** — name validation uses programmatic string matching, not LLM inference.
+3. **Every agent has typed input/output contracts** — Zod schemas, not free text.
+4. **Pipeline state is always persisted** — every agent's input, output, and errors are stored for debugging.
+5. **No `any` in TypeScript** without explicit justification in a comment.
+6. **All API routes validate input** with Zod before processing.
+7. **All LLM calls have error handling** — retries, timeouts, fallback behavior.
+8. **Arabic text uses consistent Unicode normalization** throughout the codebase.
+9. **Secrets live in environment variables** — never in code, never in logs.
+10. **Clerk handles all auth** — no custom auth logic.
+
+## The Team
+
+This project is supported by an AI development team. Call them by name:
+- **Alex** — PM / Roadmap
+- **Sam** — Architect
+- **Raya** — Reviewer
+- **Omar** — Debugger
+- **Dana** — Prompt Engineer
+- **Kai** — DevOps

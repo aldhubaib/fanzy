@@ -7,13 +7,15 @@ alwaysApply: false
 # Testing Rules
 
 ## Current Status
-No test runner is configured yet. There is no `test` script in `package.json`, no Vitest/Jest dependency, and no test files.
-When testing is set up (planned: Vitest), follow the conventions below.
+No test runner is configured yet. When testing is set up (planned: Vitest), follow the conventions below.
 
 ## What to Test
-- Pure logic and utilities (e.g. `executor.ts`, `utils.ts`) → always unit test
-- Critical user flows → always integration/e2e test
-- API routes → integration test with mocked DB/RunPod
+- Agent input/output contracts (Zod schemas) → always unit test
+- Fact Sheet immutability guarantees → always unit test
+- Name Registry validation logic → always unit test
+- Pipeline orchestration (BullMQ job flow) → integration test
+- API routes → integration test with mocked DB
+- LLM agent calls → integration test with mocked Claude/OpenAI responses
 - UI styling and layout → skip
 - Static content → skip
 
@@ -25,7 +27,7 @@ When testing is set up (planned: Vitest), follow the conventions below.
 - Place test files next to the code they test: `foo.ts` → `foo.test.ts`
 
 ## Rules
-- Mock at the boundary — external systems only (APIs, DB, RunPod, Clerk, Inngest)
+- Mock at the boundary — external systems only (Claude API, OpenAI API, PostgreSQL, Redis, Clerk)
 - Never mock the code you're testing
 - A failing test must tell you exactly what broke and where
 
