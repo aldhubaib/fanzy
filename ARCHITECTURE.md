@@ -30,13 +30,15 @@ fanzy/
 │   │   ├── env.ts             # Zod-validated environment config
 │   │   └── redis.ts           # Redis connection for BullMQ
 │   ├── middleware/
-│   │   └── auth.ts            # Clerk auth middleware (clerkAuth + requireSignIn)
+│   │   ├── auth.ts            # Clerk auth middleware (clerkAuth + requireSignIn)
+│   │   └── resolve-user.ts   # Resolves Clerk session → DB user (auto-creates on first call)
 │   ├── agents/
 │   │   └── researcher.ts      # Researcher agent — Claude prompt + FactSheet extraction
 │   ├── services/
 │   │   └── researcher.ts      # Researcher orchestration — pipeline tracking + persistence
 │   ├── routes/
 │   │   ├── health.ts          # Health check endpoint
+│   │   ├── projects.ts        # GET/POST /api/projects, GET /api/projects/:id
 │   │   └── researcher.ts      # POST /api/projects/:id/research
 │   ├── types/
 │   │   ├── fact-sheet.ts      # Zod schemas for FactSheet, NameRegistry, Timeline, Locations
@@ -47,8 +49,18 @@ fanzy/
 │   ├── vite.config.ts         # Vite config with API proxy
 │   └── src/
 │       ├── main.tsx           # React entry (ClerkProvider wraps app)
-│       ├── App.tsx            # Root component (sign-in / signed-in views)
-│       └── index.css          # Tailwind + design tokens
+│       ├── App.tsx            # Router + auth gating (landing vs dashboard)
+│       ├── index.css          # Tailwind + design tokens
+│       ├── lib/
+│       │   └── api.ts         # Typed fetch wrapper for API calls
+│       ├── pages/
+│       │   ├── ProjectsPage.tsx   # Project list + empty state
+│       │   └── ProjectPage.tsx    # Project detail + researcher trigger + fact sheet
+│       └── components/
+│           ├── Layout.tsx         # Shared header with nav + UserButton
+│           ├── StatusBadge.tsx    # Pipeline status badge (Arabic labels)
+│           ├── NewProjectDialog.tsx # Modal form for creating projects
+│           └── FactSheetView.tsx  # Renders facts, names, timeline, locations
 ├── package.json               # Backend deps + scripts
 ├── tsconfig.json              # Backend TypeScript config
 ├── .env.example               # Required environment variables

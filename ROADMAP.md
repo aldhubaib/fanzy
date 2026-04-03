@@ -3,13 +3,12 @@
 ## In Progress
 
 ## Review
+- [ ] Dashboard UI — create project, view pipeline status, browse storyboard output — branch: `feat/dashboard-ui`
 
 ## Known Bugs
 
 ## Up Next
 - [ ] BullMQ pipeline — job queue wiring for sequential agent orchestration
-- [ ] Dashboard UI — create project, view pipeline status, browse storyboard output
-
 ## Backlog
 - [ ] Scriptwriter agent — structured script generation from Fact Sheet
 - [ ] Editor agent — script polishing pass
