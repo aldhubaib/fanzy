@@ -36,11 +36,13 @@ fanzy/
 │   ├── services/
 │   │   └── researcher.ts      # Researcher orchestration — pipeline tracking + persistence
 │   ├── routes/
-│   │   ├── health.ts          # Health check endpoint
-│   │   └── researcher.ts      # POST /api/projects/:id/research
+│   │   ├── health.ts              # Health check endpoint
+│   │   ├── researcher.ts          # POST /api/projects/:id/research
+│   │   └── creator-profiles.ts    # CRUD /api/creator-profiles
 │   ├── types/
-│   │   ├── fact-sheet.ts      # Zod schemas for FactSheet, NameRegistry, Timeline, Locations
-│   │   └── researcher.ts      # Researcher input/output contracts
+│   │   ├── fact-sheet.ts          # Zod schemas for FactSheet, NameRegistry, Timeline, Locations
+│   │   ├── creator-profile.ts     # Creator Profile schemas (dialect, format, flow, QA rules)
+│   │   └── researcher.ts          # Researcher input/output contracts
 │   └── workers/               # BullMQ job workers (agent steps)
 ├── client/
 │   ├── index.html             # HTML shell (RTL, Arabic fonts)
@@ -58,8 +60,9 @@ fanzy/
 
 ## Data Models
 
-- **User** — synced from Clerk via webhook, owns projects
-- **Project** — title, source text, genre, dialect, status (tracks pipeline stage)
+- **User** — synced from Clerk via webhook, owns projects and creator profiles
+- **CreatorProfile** — per-creator style definition: dialect, tone, narrator role, script format template, dialogue rules, narrative flow, QA rules. Linked to User. Projects optionally reference a profile. Read-only during pipeline runs (like the Fact Sheet).
+- **Project** — title, source text, genre, dialect, status (tracks pipeline stage), optional `creatorProfileId`
 - **FactSheet** — immutable facts, name registry, timeline, locations (locked after Researcher)
 - **Script** — structured acts/beats with fact references, narration, timing
 - **Storyboard** — scenes with shot types, camera direction, B-roll, transitions
