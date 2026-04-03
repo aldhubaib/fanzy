@@ -1,14 +1,13 @@
 # Fanzy — Roadmap
 
 ## In Progress
-- [ ] Project scaffold — Express + React + Prisma + TypeScript monorepo setup — branch: `feat/project-scaffold`
 
 ## Review
+- [ ] Project scaffold — Express + React + Prisma + TypeScript monorepo setup — branch: `feat/project-scaffold`
 
 ## Known Bugs
 
 ## Up Next
-- [ ] Prisma schema — Project, FactSheet, Script, Storyboard, PipelineRun, Persona models
 - [ ] Researcher agent — Fact Sheet + Name Registry generation from raw story input
 - [ ] BullMQ pipeline — job queue wiring for sequential agent orchestration
 - [ ] Dashboard UI — create project, view pipeline status, browse storyboard output
