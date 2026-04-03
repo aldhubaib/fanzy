@@ -3,7 +3,6 @@
 ## In Progress
 
 ## Review
-- [ ] Auth integration — Google sign-in via Clerk, protected API routes — branch: `feat/auth-google`
 
 ## Known Bugs
 
@@ -21,5 +20,6 @@
 - [ ] Arabic Unicode normalization — consistent handling across all text processing
 
 ## Done (recent)
+- [x] Auth integration — Google sign-in via Clerk, protected API routes
 - [x] Researcher agent — Fact Sheet + Name Registry generation from raw story input
 - [x] Project scaffold — Express + React + Prisma + TypeScript monorepo setup
