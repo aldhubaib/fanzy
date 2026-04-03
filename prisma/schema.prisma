@@ -42,7 +42,29 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  projects        Project[]
+  creatorProfiles CreatorProfile[]
+}
+
+model CreatorProfile {
+  id             String   @id @default(cuid())
+  name           String
+  dialect        String
+  tone           String
+  narratorRole   String
+  genre          String
+  scriptFormat   Json
+  dialogueRules  Json
+  narrativeFlow  Json
+  qaRules        Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  userId   String
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   projects Project[]
+
+  @@index([userId])
 }
 
 model Project {
@@ -60,12 +82,16 @@ model Project {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  creatorProfileId String?
+  creatorProfile   CreatorProfile? @relation(fields: [creatorProfileId], references: [id], onDelete: SetNull)
+
   factSheet    FactSheet?
   script       Script?
   storyboard   Storyboard?
   pipelineRuns PipelineRun[]
 
   @@index([userId])
+  @@index([creatorProfileId])
 }
 
 model FactSheet {
