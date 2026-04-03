@@ -13,6 +13,7 @@ This project is supported by an AI development team powered by [Cursor Team](htt
 | **Omar** | Debugger | "hey omar" | Bug investigation, pipeline failure tracing |
 | **Dana** | Prompt Engineer | "hey dana" | Persona prompts, Arabic quality, LLM selection |
 | **Kai** | DevOps | "hey kai" | Railway deployment, Docker, monitoring |
+| **Tala** | Designer | "hey tala" | UI/UX, component design, RTL layout, accessibility |
 
 ## Project Profile
 
