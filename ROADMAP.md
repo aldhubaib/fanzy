@@ -3,12 +3,11 @@
 ## In Progress
 
 ## Review
-- [ ] Project scaffold — Express + React + Prisma + TypeScript monorepo setup — branch: `feat/project-scaffold`
+- [ ] Researcher agent — Fact Sheet + Name Registry generation from raw story input — branch: `feat/researcher-agent`
 
 ## Known Bugs
 
 ## Up Next
-- [ ] Researcher agent — Fact Sheet + Name Registry generation from raw story input
 - [ ] BullMQ pipeline — job queue wiring for sequential agent orchestration
 - [ ] Dashboard UI — create project, view pipeline status, browse storyboard output
 
@@ -23,3 +22,4 @@
 - [ ] Auth integration — Clerk user management, project ownership scoping
 
 ## Done (recent)
+- [x] Project scaffold — Express + React + Prisma + TypeScript monorepo setup

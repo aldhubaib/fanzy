@@ -13,6 +13,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.82.0",
     "@clerk/express": "^1.0.0",
     "@prisma/client": "^6.0.0",
     "bullmq": "^5.0.0",
