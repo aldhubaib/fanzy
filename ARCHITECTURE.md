@@ -25,12 +25,20 @@ fanzy/
 ├── src/
 │   ├── server.ts              # Express entry point
 │   ├── lib/
+│   │   ├── anthropic.ts       # Anthropic (Claude) client singleton
 │   │   ├── db.ts              # Prisma client singleton
 │   │   ├── env.ts             # Zod-validated environment config
 │   │   └── redis.ts           # Redis connection for BullMQ
+│   ├── agents/
+│   │   └── researcher.ts      # Researcher agent — Claude prompt + FactSheet extraction
+│   ├── services/
+│   │   └── researcher.ts      # Researcher orchestration — pipeline tracking + persistence
 │   ├── routes/
-│   │   └── health.ts          # Health check endpoint
-│   ├── types/                 # Shared TypeScript types + Zod schemas
+│   │   ├── health.ts          # Health check endpoint
+│   │   └── researcher.ts      # POST /api/projects/:id/research
+│   ├── types/
+│   │   ├── fact-sheet.ts      # Zod schemas for FactSheet, NameRegistry, Timeline, Locations
+│   │   └── researcher.ts      # Researcher input/output contracts
 │   └── workers/               # BullMQ job workers (agent steps)
 ├── client/
 │   ├── index.html             # HTML shell (RTL, Arabic fonts)
@@ -85,6 +93,24 @@ Production-Ready Storyboard
 
 Each agent step is a BullMQ job. Pipeline state is persisted in PipelineRun records.
 
+## Agent Implementation Pattern
+
+Each agent follows a three-layer architecture:
+
+| Layer | File | Responsibility |
+|-------|------|----------------|
+| Types | `src/types/<agent>.ts` | Zod input/output schemas |
+| Agent | `src/agents/<agent>.ts` | LLM call + response parsing (pure function, no DB) |
+| Service | `src/services/<agent>.ts` | Orchestration: PipelineRun tracking, DB persistence, status updates |
+
+**Researcher agent** (implemented):
+- **Input:** Project's `sourceText`, optional `genre` and `dialect`
+- **Output:** Validated `FactSheet` (facts, nameRegistry, timeline, locations)
+- **LLM:** Claude (claude-sonnet-4-20250514) with structured JSON output
+- **Endpoint:** `POST /api/projects/:id/research`
+- **Immutability:** Once a FactSheet is created, the service rejects re-research (HTTP 409)
+- **Error handling:** Retries up to 3 attempts with exponential backoff; failures update PipelineRun and project status
+
 ## Key Decisions
 
 1. **Fact Sheet is immutable** — once the Researcher signs off, no code path may modify it
@@ -97,4 +123,4 @@ Each agent step is a BullMQ job. Pipeline state is persisted in PipelineRun reco
 
 ## Environment Variables
 
-See `.env.example` for the full list. Required: `DATABASE_URL`, `REDIS_URL`. Optional during dev: `CLERK_*`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`.
+See `.env.example` for the full list. Required: `DATABASE_URL`, `REDIS_URL`, `ANTHROPIC_API_KEY`. Optional during dev: `CLERK_*`, `OPENAI_API_KEY`.
